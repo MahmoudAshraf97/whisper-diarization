@@ -1,4 +1,4 @@
-# whisper-diarization
+# Speaker Diarization Using OpenAI Whisper
 Speaker Diarization pipeline based on OpenAI Whisper
 I'd like to thank [@m-bain](https://github.com/m-bain) for Wav2Vec2 forced alignment, [@mu4farooqi](https://github.com/mu4farooqi) for punctuation realignment algorithm
 
