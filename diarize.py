@@ -15,17 +15,37 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-a", "--audio", help="name of the target audio file", required=True
 )
+parser.add_argument(
+    "--no-stem",
+    action="store_false",
+    dest="stemming",
+    default=True,
+    help="Disables source separation."
+    "This helps with long files that don't contain a lot of music.",
+)
 args = parser.parse_args()
-download_target = args.audio
+
 
 
 # ROOT = os.getcwd()
 # os.chdir(ROOT)
-# Isolate vocals from the rest of the audio
-os.system(
-    f'python3 -m demucs.separate -n htdemucs_ft --two-stems=vocals "{download_target}" -o "temp_outputs"'
-)
-vocal_target = f"temp_outputs/htdemucs_ft/{download_target[:-4]}/vocals.wav"
+
+if args.stemming:
+    # Isolate vocals from the rest of the audio
+
+    return_code = os.system(
+        f'python3 -m demucs.separate -n htdemucs_ft --two-stems=vocals "{args.audio}" -o "temp_outputs"'
+    )
+
+    if return_code != 0:
+        print(
+            "Source splitting failed, using original audio file. Use --no-stem argument to disable it."
+        )
+        vocal_target = args.audio
+    else:
+        vocal_target = f"temp_outputs/htdemucs_ft/{args.audio[:-4]}/vocals.wav"
+else:
+    vocal_target = args.audio
 
 
 # Large models result in considerably better and more aligned (words, timestamps) mapping.
@@ -103,10 +123,10 @@ os.chdir("..")  # back to parent dir
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
-with open(f"{download_target[:-4]}.txt", "w", encoding="utf-8-sig") as f:
+with open(f"{args.audio[:-4]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
 
-with open(f"{download_target[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
+with open(f"{args.audio[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
 
 cleanup("temp_outputs")
