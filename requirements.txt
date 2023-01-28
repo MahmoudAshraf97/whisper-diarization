@@ -10,6 +10,6 @@ accelerate
 text-unidecode
 git+https://github.com/NVIDIA/NeMo.git@r1.14.0#egg=nemo_toolkit[asr]
 git+https://github.com/openai/whisper.git
-git+https://github.com/m-bain/whisperX.git
+git+https://github.com/m-bain/whisperX.git@69673eb39b8e69de9237af3ac098a41e425aba92
 git+https://github.com/facebookresearch/demucs#egg=demucs
 deepmultilingualpunctuation
