@@ -18,7 +18,7 @@ python diarize.py -a AUDIO_FILE_NAME
 
 ## Known Limitations
 - Only tested on english
-- Overlapping speakers are yet to be addressed, a possible apprioach would be to separate the audio file and isolate only one speaker, then feed it into the pipeline but this will need much more computation
+- Overlapping speakers are yet to be addressed, a possible approach would be to separate the audio file and isolate only one speaker, then feed it into the pipeline but this will need much more computation
 - There might be some errors, please raise an issue if you encounter any.
 
 ## Aknowledgements
