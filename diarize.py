@@ -23,10 +23,14 @@ parser.add_argument(
     help="Disables source separation."
     "This helps with long files that don't contain a lot of music.",
 )
+
+parser.add_argument("--whisper-model", dest="model_name", default="medium.en", help="name of the Whisper model to use")
+
 args = parser.parse_args()
 
 
-
+punct_model_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'bg', 'pl', 'cs', 'sk', 'sl']
+wav2vec2_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'ja', 'zh', 'uk']
 # ROOT = os.getcwd()
 # os.chdir(ROOT)
 
@@ -49,7 +53,7 @@ else:
 
 
 # Large models result in considerably better and more aligned (words, timestamps) mapping.
-model = load_model("medium.en")
+model = load_model(args.model_name)
 whisper_results = model.transcribe(vocal_target, beam_size=None)
 
 # clear gpu vram
@@ -57,7 +61,7 @@ del model
 torch.cuda.empty_cache()
 
 device = "cuda"
-alignment_model, metadata = whisperx.load_align_model(language_code="en", device=device)
+alignment_model, metadata = whisperx.load_align_model(language_code=whisper_results["language"], device=device)
 result_aligned = whisperx.align(
     whisper_results["segments"], alignment_model, metadata, vocal_target, device
 )
@@ -93,34 +97,38 @@ with open(f"{output_dir}/pred_rttms/mono_file.rttm", "r") as f:
 
 wsm = get_words_speaker_mapping(result_aligned["word_segments"], speaker_ts, "start")
 
-# restoring punctuation in the transcript to help realign the sentences
-punct_model = PunctuationModel(model="kredor/punctuate-all")
+if whisper_results["language"] in punct_model_langs:
+    # restoring punctuation in the transcript to help realign the sentences
+    punct_model = PunctuationModel(model="kredor/punctuate-all")
 
-words_list = list(map(lambda x: x["word"], wsm))
+    words_list = list(map(lambda x: x["word"], wsm))
 
-labled_words = punct_model.predict(words_list)
+    labled_words = punct_model.predict(words_list)
 
-ending_puncts = ".?!"
-model_puncts = ".,;:!?"
+    ending_puncts = ".?!"
+    model_puncts = ".,;:!?"
 
-# We don't want to punctuate U.S.A. with a period. Right?
-is_acronym = lambda x: re.fullmatch(r"\b(?:[a-zA-Z]\.){2,}", x)
+    # We don't want to punctuate U.S.A. with a period. Right?
+    is_acronym = lambda x: re.fullmatch(r"\b(?:[a-zA-Z]\.){2,}", x)
 
-for word_dict, labeled_tuple in zip(wsm, labled_words):
-    word = word_dict["word"]
-    if (
-        word
-        and labeled_tuple[1] in ending_puncts
-        and (word[-1] not in model_puncts or is_acronym(word))
-    ):
-        word += labeled_tuple[1]
-        if word.endswith(".."):
-            word = word.rstrip(".")
-        word_dict["word"] = word
+    for word_dict, labeled_tuple in zip(wsm, labled_words):
+        word = word_dict["word"]
+        if (
+            word
+            and labeled_tuple[1] in ending_puncts
+            and (word[-1] not in model_puncts or is_acronym(word))
+        ):
+            word += labeled_tuple[1]
+            if word.endswith(".."):
+                word = word.rstrip(".")
+            word_dict["word"] = word
 
-os.chdir("..")  # back to parent dir
+    os.chdir("..")  # back to parent dir
 
-wsm = get_realigned_ws_mapping_with_punctuation(wsm)
+    wsm = get_realigned_ws_mapping_with_punctuation(wsm)
+else:
+    print(f'Punctuation restoration is not available for {whisper_results["language"]} language.')
+
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
 with open(f"{args.audio[:-4]}.txt", "w", encoding="utf-8-sig") as f:
