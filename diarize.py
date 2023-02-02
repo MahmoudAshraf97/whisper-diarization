@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 
 punct_model_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'bg', 'pl', 'cs', 'sk', 'sl']
-wav2vec2_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'ja', 'zh', 'uk']
+wav2vec2_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'ja', 'zh', 'uk', 'pt', 'ar', 'ru', 'pl', 'hu', 'fi', 'fa', 'el', 'tr',]
 # ROOT = os.getcwd()
 # os.chdir(ROOT)
 
