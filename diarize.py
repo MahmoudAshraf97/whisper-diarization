@@ -24,13 +24,51 @@ parser.add_argument(
     "This helps with long files that don't contain a lot of music.",
 )
 
-parser.add_argument("--whisper-model", dest="model_name", default="medium.en", help="name of the Whisper model to use")
+parser.add_argument(
+    "--whisper-model",
+    dest="model_name",
+    default="medium.en",
+    help="name of the Whisper model to use",
+)
 
 args = parser.parse_args()
 
 
-punct_model_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'bg', 'pl', 'cs', 'sk', 'sl']
-wav2vec2_langs = ['en', 'fr', 'de', 'es', 'it', 'nl', 'pt', 'ja', 'zh', 'uk', 'pt', 'ar', 'ru', 'pl', 'hu', 'fi', 'fa', 'el', 'tr',]
+punct_model_langs = [
+    "en",
+    "fr",
+    "de",
+    "es",
+    "it",
+    "nl",
+    "pt",
+    "bg",
+    "pl",
+    "cs",
+    "sk",
+    "sl",
+]
+wav2vec2_langs = [
+    "en",
+    "fr",
+    "de",
+    "es",
+    "it",
+    "nl",
+    "pt",
+    "ja",
+    "zh",
+    "uk",
+    "pt",
+    "ar",
+    "ru",
+    "pl",
+    "hu",
+    "fi",
+    "fa",
+    "el",
+    "tr",
+]
 # ROOT = os.getcwd()
 # os.chdir(ROOT)
 
@@ -54,14 +92,16 @@ else:
 
 # Large models result in considerably better and more aligned (words, timestamps) mapping.
 model = load_model(args.model_name)
-whisper_results = model.transcribe(vocal_target, beam_size=None)
+whisper_results = model.transcribe(vocal_target, beam_size=None, verbose=False)
 
 # clear gpu vram
 del model
 torch.cuda.empty_cache()
 
 device = "cuda"
-alignment_model, metadata = whisperx.load_align_model(language_code=whisper_results["language"], device=device)
+alignment_model, metadata = whisperx.load_align_model(
+    language_code=whisper_results["language"], device=device
+)
 result_aligned = whisperx.align(
     whisper_results["segments"], alignment_model, metadata, vocal_target, device
 )
@@ -127,7 +167,9 @@ if whisper_results["language"] in punct_model_langs:
 
     wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:
-    print(f'Punctuation restoration is not available for {whisper_results["language"]} language.')
+    print(
+        f'Punctuation restoration is not available for {whisper_results["language"]} language.'
+    )
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
