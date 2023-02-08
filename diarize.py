@@ -69,8 +69,7 @@ wav2vec2_langs = [
     "el",
     "tr",
 ]
-# ROOT = os.getcwd()
-# os.chdir(ROOT)
+
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -112,7 +111,9 @@ torch.cuda.empty_cache()
 
 # convert audio to mono for NeMo combatibility
 signal, sample_rate = librosa.load(vocal_target, sr=None)
-os.chdir("temp_outputs")
+ROOT = os.getcwd()
+temp_path = os.path.join(ROOT, "temp_outputs")
+os.chdir(temp_path)
 soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
@@ -163,7 +164,7 @@ if whisper_results["language"] in punct_model_langs:
                 word = word.rstrip(".")
             word_dict["word"] = word
 
-    os.chdir("..")  # back to parent dir
+    
 
     wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:
@@ -173,10 +174,11 @@ else:
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
+os.chdir(ROOT)  # back to parent dir
 with open(f"{args.audio[:-4]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
 
 with open(f"{args.audio[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
 
-cleanup("temp_outputs")
+cleanup(temp_path)
