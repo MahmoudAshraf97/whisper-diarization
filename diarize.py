@@ -90,11 +90,11 @@ else:
 
 
 # Large models result in considerably better and more aligned (words, timestamps) mapping.
-model = load_model(args.model_name)
+whisper_model = load_model(args.model_name)
 whisper_results = model.transcribe(vocal_target, beam_size=None, verbose=False)
 
 # clear gpu vram
-del model
+del whisper_model
 torch.cuda.empty_cache()
 
 device = "cuda"
