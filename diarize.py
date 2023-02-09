@@ -117,10 +117,10 @@ os.chdir(temp_path)
 soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-model = NeuralDiarizer(cfg=create_config())
-model.diarize()
+msdd_model = NeuralDiarizer(cfg=create_config())
+msdd_model.diarize()
 
-del model
+del msdd_model
 torch.cuda.empty_cache()
 
 # Reading timestamps <> Speaker Labels mapping
