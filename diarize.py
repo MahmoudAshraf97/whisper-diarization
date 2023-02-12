@@ -113,6 +113,8 @@ torch.cuda.empty_cache()
 signal, sample_rate = librosa.load(vocal_target, sr=None)
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
+if not os.path.exists(temp_path):
+    os.mkdir(temp_path)
 os.chdir(temp_path)
 soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
 
