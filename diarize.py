@@ -91,7 +91,7 @@ else:
 
 # Large models result in considerably better and more aligned (words, timestamps) mapping.
 whisper_model = load_model(args.model_name)
-whisper_results = model.transcribe(vocal_target, beam_size=None, verbose=False)
+whisper_results = whisper_model.transcribe(vocal_target, beam_size=None, verbose=False)
 
 # clear gpu vram
 del whisper_model
