@@ -8,8 +8,8 @@ sanic==22.6.2
 transformers==4.26.1
 accelerate
 text-unidecode
-git+https://github.com/NVIDIA/NeMo.git@r1.14.0#egg=nemo_toolkit[asr]
+nemo_toolkit[asr]==1.15.0
 git+https://github.com/openai/whisper.git
-git+https://github.com/m-bain/whisperX.git@d687cf33588dac51536d7d0edb840ac92a69df11
+git+https://github.com/m-bain/whisperX.git@4cb167a225c0ebaea127fd6049abfaa3af9f8bb4
 git+https://github.com/facebookresearch/demucs#egg=demucs
 deepmultilingualpunctuation
