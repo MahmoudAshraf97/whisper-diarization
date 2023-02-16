@@ -1,4 +1,5 @@
 import argparse
+import subprocess
 import os
 from helpers import *
 from whisper import load_model
@@ -69,24 +70,25 @@ wav2vec2_langs = [
     "el",
     "tr",
 ]
-
+#convert to supported format
+subprocess.run(["ffmpeg", "-y", "-i", f"{args.audio}", "-ar", "16000", "-loglevel", "quiet", "-ac", "1", "-c:a", "pcm_s16le", "audio.wav"])
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python3 -m demucs.separate -n htdemucs_ft --two-stems=vocals "{args.audio}" -o "temp_outputs"'
+        f'python3 -m demucs.separate -n htdemucs_ft --two-stems=vocals "audio.wav" -o "temp_outputs"'
     )
 
     if return_code != 0:
         print(
             "Source splitting failed, using original audio file. Use --no-stem argument to disable it."
         )
-        vocal_target = args.audio
+        vocal_target = 'audio.wav'
     else:
-        vocal_target = f"temp_outputs/htdemucs_ft/{args.audio[:-4]}/vocals.wav"
+        vocal_target = f"temp_outputs/htdemucs_ft/audio/vocals.wav"
 else:
-    vocal_target = args.audio
+    vocal_target = 'audio.wav'
 
 
 # Large models result in considerably better and more aligned (words, timestamps) mapping.
