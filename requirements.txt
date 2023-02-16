@@ -5,7 +5,7 @@ torchaudio==0.13.1+cu116
 torchtext==0.14.1
 pytorch-lightning==1.8.6
 sanic==22.6.2
-transformers
+transformers==4.26.1
 accelerate
 text-unidecode
 git+https://github.com/NVIDIA/NeMo.git@r1.14.0#egg=nemo_toolkit[asr]
