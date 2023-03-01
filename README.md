@@ -1,4 +1,29 @@
-# Speaker Diarization Using OpenAI Whisper
+<h1 align="center">Speaker Diarization Using OpenAI Whisper</h1>
+<p align="center">
+  <a href="https://github.com/MahmoudAshraf97/whisper-diarization/stargazers">
+    <img src="https://img.shields.io/github/stars/MahmoudAshraf97/whisper-diarization.svg?colorA=orange&colorB=orange&logo=github"
+         alt="GitHub stars">
+  </a>
+  <a href="https://github.com/MahmoudAshraf97/whisper-diarization/issues">
+        <img src="https://img.shields.io/github/issues/MahmoudAshraf97/whisper-diarization.svg"
+             alt="GitHub issues">
+  </a>
+  <a href="https://github.com/MahmoudAshraf97/whisper-diarization/blob/master/LICENSE">
+        <img src="https://img.shields.io/github/license/MahmoudAshraf97/whisper-diarization.svg"
+             alt="GitHub license">
+  </a>
+  <a href="https://twitter.com/intent/tweet?text=&url=https%3A%2F%2Fgithub.com%2FMahmoudAshraf97%2Fwhisper-diarization">
+  <img src="https://img.shields.io/twitter/url/https/github.com/MahmoudAshraf97/whisper-diarization.svg?style=social" alt="Twitter">
+  </a> 
+  </a>
+  <a href="https://colab.research.google.com/drive/1fhjGIr_S_vERE9_F1UL033g5shVD-q5K">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
+  </a>
+ 
+</p>
+
+
+# 
 Speaker Diarization pipeline based on OpenAI Whisper
 I'd like to thank [@m-bain](https://github.com/m-bain) for Wav2Vec2 forced alignment, [@mu4farooqi](https://github.com/mu4farooqi) for punctuation realignment algorithm
 
