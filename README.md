@@ -48,5 +48,10 @@ python diarize.py -a AUDIO_FILE_NAME
 - Overlapping speakers are yet to be addressed, a possible approach would be to separate the audio file and isolate only one speaker, then feed it into the pipeline but this will need much more computation
 - There might be some errors, please raise an issue if you encounter any.
 
+## Future Improvements
+- Implement a maximum length per sentence for SRT
+- Use Whisper word-level timestamps for languages that are not in WhisperX
+- Improve performance using Faster Whisper or Batched Inference
+
 ## Aknowledgements
 Special Thanks for [@adamjonas](https://github.com/adamjonas) for supporting this project
