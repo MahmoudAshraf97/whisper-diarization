@@ -1,11 +1,11 @@
 --extra-index-url https://download.pytorch.org/whl/cu116
+cython
 torch==1.13.1+cu116
 torchvision==0.14.1+cu116
 torchaudio==0.13.1+cu116
 torchtext==0.14.1
 pytorch-lightning==1.8.6
 sanic==22.6.2
-transformers==4.26.1
 accelerate
 text-unidecode
 nemo_toolkit[asr]==1.15.0
