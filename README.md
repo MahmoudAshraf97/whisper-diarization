@@ -43,6 +43,12 @@ Whisper, WhisperX and NeMo parameters are coded into diarize.py and helpers.py, 
 python diarize.py -a AUDIO_FILE_NAME
 ```
 
+## Command Line Options
+
+- `-a AUDIO_FILE_NAME`: The name of the audio file to be processed
+- `--no-stem`: Disables source separation
+- `--whisper-model`: The model to be used for ASR, default is `medium.en`
+
 ## Known Limitations
 - Only tested on english but several other languages are supported
 - Overlapping speakers are yet to be addressed, a possible approach would be to separate the audio file and isolate only one speaker, then feed it into the pipeline but this will need much more computation
