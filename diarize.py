@@ -119,7 +119,7 @@ os.chdir(temp_path)
 soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config())
+msdd_model = NeuralDiarizer(cfg=create_config()).to("cuda")
 msdd_model.diarize()
 
 del msdd_model
