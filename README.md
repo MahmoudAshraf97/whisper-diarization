@@ -43,6 +43,8 @@ Whisper, WhisperX and NeMo parameters are coded into diarize.py and helpers.py, 
 python diarize.py -a AUDIO_FILE_NAME
 ```
 
+If your system has enough VRAM (>=16GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be benifecial in some cases and the result is the same since the two models are not dependant on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
+
 ## Command Line Options
 
 - `-a AUDIO_FILE_NAME`: The name of the audio file to be processed
