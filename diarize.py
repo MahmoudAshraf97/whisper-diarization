@@ -34,43 +34,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-punct_model_langs = [
-    "en",
-    "fr",
-    "de",
-    "es",
-    "it",
-    "nl",
-    "pt",
-    "bg",
-    "pl",
-    "cs",
-    "sk",
-    "sl",
-]
-wav2vec2_langs = [
-    "en",
-    "fr",
-    "de",
-    "es",
-    "it",
-    "nl",
-    "pt",
-    "ja",
-    "zh",
-    "uk",
-    "pt",
-    "ar",
-    "ru",
-    "pl",
-    "hu",
-    "fi",
-    "fa",
-    "el",
-    "tr",
-]
-
-
 if args.stemming:
     # Isolate vocals from the rest of the audio
 
@@ -165,8 +128,6 @@ if whisper_results["language"] in punct_model_langs:
             if word.endswith(".."):
                 word = word.rstrip(".")
             word_dict["word"] = word
-
-    
 
     wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:

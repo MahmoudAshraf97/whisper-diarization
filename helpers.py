@@ -4,6 +4,42 @@ from omegaconf import OmegaConf
 import json
 import shutil
 
+punct_model_langs = [
+    "en",
+    "fr",
+    "de",
+    "es",
+    "it",
+    "nl",
+    "pt",
+    "bg",
+    "pl",
+    "cs",
+    "sk",
+    "sl",
+]
+wav2vec2_langs = [
+    "en",
+    "fr",
+    "de",
+    "es",
+    "it",
+    "nl",
+    "pt",
+    "ja",
+    "zh",
+    "uk",
+    "pt",
+    "ar",
+    "ru",
+    "pl",
+    "hu",
+    "fi",
+    "fa",
+    "el",
+    "tr",
+]
+
 
 def create_config():
     data_dir = "./"
