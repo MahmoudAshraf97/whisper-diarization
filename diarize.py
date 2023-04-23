@@ -1,7 +1,7 @@
 import argparse
 import os
 from helpers import *
-from whisper import load_model
+from faster_whisper import WhisperModel
 import whisperx
 import torch
 import librosa
@@ -52,25 +52,42 @@ else:
     vocal_target = args.audio
 
 
-# Large models result in considerably better and more aligned (words, timestamps) mapping.
-whisper_model = load_model(args.model_name)
-whisper_results = whisper_model.transcribe(vocal_target, beam_size=None, verbose=False)
+# Run on GPU with FP16
+whisper_model = WhisperModel(args.model_name, device="cuda", compute_type="float16")
 
+# or run on GPU with INT8
+# model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
+# or run on CPU with INT8
+# model = WhisperModel(model_size, device="cpu", compute_type="int8")
+
+segments, info = whisper_model.transcribe(
+    vocal_target, beam_size=1, word_timestamps=True
+)
+whisper_results = []
+for segment in segments:
+    whisper_results.append(segment._asdict())
 # clear gpu vram
 del whisper_model
 torch.cuda.empty_cache()
 
-device = "cuda"
-alignment_model, metadata = whisperx.load_align_model(
-    language_code=whisper_results["language"], device=device
-)
-result_aligned = whisperx.align(
-    whisper_results["segments"], alignment_model, metadata, vocal_target, device
-)
+if info.language in wav2vec2_langs:
+    device = "cuda"
+    alignment_model, metadata = whisperx.load_align_model(
+        language_code=info.language, device=device
+    )
+    result_aligned = whisperx.align(
+        whisper_results, alignment_model, metadata, vocal_target, device
+    )
+    word_timestamps = result_aligned["word_segments"]
+    # clear gpu vram
+    del alignment_model
+    torch.cuda.empty_cache()
+else:
+    word_timestamps = []
+    for segment in whisper_results:
+        for word in segment["words"]:
+            word_timestamps.append({"text": word[2], "start": word[0], "end": word[1]})
 
-# clear gpu vram
-del alignment_model
-torch.cuda.empty_cache()
 
 # convert audio to mono for NeMo combatibility
 signal, sample_rate = librosa.load(vocal_target, sr=None)
@@ -101,9 +118,9 @@ with open(f"{output_dir}/pred_rttms/mono_file.rttm", "r") as f:
         e = s + int(float(line_list[8]) * 1000)
         speaker_ts.append([s, e, int(line_list[11].split("_")[-1])])
 
-wsm = get_words_speaker_mapping(result_aligned["word_segments"], speaker_ts, "start")
+wsm = get_words_speaker_mapping(word_timestamps, speaker_ts, "start")
 
-if whisper_results["language"] in punct_model_langs:
+if info.language in punct_model_langs:
     # restoring punctuation in the transcript to help realign the sentences
     punct_model = PunctuationModel(model="kredor/punctuate-all")
 
