@@ -27,8 +27,6 @@
 Speaker Diarization pipeline based on OpenAI Whisper
 I'd like to thank [@m-bain](https://github.com/m-bain) for Wav2Vec2 forced alignment, [@mu4farooqi](https://github.com/mu4farooqi) for punctuation realignment algorithm
 
-This work is based on [OpenAI's Whisper](https://github.com/openai/whisper) , [Nvidia NeMo](https://github.com/NVIDIA/NeMo) , and [Facebook's Demucs](https://github.com/facebookresearch/demucs)
-
 <img src="https://github.blog/wp-content/uploads/2020/09/github-stars-logo_Color.png" alt="drawing" width="25"/> **Please, star the project on github (see top-right corner) if you appreciate my contribution to the community!**
 
 ## What is it
@@ -62,3 +60,4 @@ If your system has enough VRAM (>=16GB), you can use `diarize_parallel.py` inste
 
 ## Aknowledgements
 Special Thanks for [@adamjonas](https://github.com/adamjonas) for supporting this project
+This work is based on [OpenAI's Whisper](https://github.com/openai/whisper) , [Faster Whisper](https://github.com/guillaumekln/faster-whisper) , [Nvidia NeMo](https://github.com/NVIDIA/NeMo) , and [Facebook's Demucs](https://github.com/facebookresearch/demucs)
