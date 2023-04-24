@@ -58,8 +58,7 @@ If your system has enough VRAM (>=16GB), you can use `diarize_parallel.py` inste
 
 ## Future Improvements
 - Implement a maximum length per sentence for SRT
-- Use Whisper word-level timestamps for languages that are not in WhisperX
-- Improve performance using Faster Whisper or Batched Inference
+- Improve Batch Processing
 
 ## Aknowledgements
 Special Thanks for [@adamjonas](https://github.com/adamjonas) for supporting this project
