@@ -47,7 +47,7 @@ if args.stemming:
         )
         vocal_target = args.audio
     else:
-        vocal_target = f"temp_outputs/htdemucs_ft/{args.audio[:-4]}/vocals.wav"
+        vocal_target = os.path.join("temp_outputs", "htdemucs_ft", os.path.basename(args.audio[:-4]), "vocals.wav")
 else:
     vocal_target = args.audio
 
