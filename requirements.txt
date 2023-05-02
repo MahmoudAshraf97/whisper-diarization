@@ -1,3 +1,4 @@
+wget
 nemo_toolkit[asr]==1.17.0
 transformers>=4.26.1
 faster-whisper==0.5.1
