@@ -34,14 +34,37 @@ This repository combines Whisper ASR capabilities with Voice Activity Detection 
 
 
 Whisper, WhisperX and NeMo parameters are coded into diarize.py and helpers.py, I will add the CLI arguments to change them later
+## Installation
+`FFMPEG` and `Cython` are needed as prerquisites to install the requirements
+```
+pip install cython
+```
+```
+# on Ubuntu or Debian
+sudo apt update && sudo apt install ffmpeg
 
+# on Arch Linux
+sudo pacman -S ffmpeg
+
+# on MacOS using Homebrew (https://brew.sh/)
+brew install ffmpeg
+
+# on Windows using Chocolatey (https://chocolatey.org/)
+choco install ffmpeg
+
+# on Windows using Scoop (https://scoop.sh/)
+scoop install ffmpeg
+```
+```
+pip install -r requirements.txt
+```
 ## Usage 
 
 ```
 python diarize.py -a AUDIO_FILE_NAME
 ```
 
-If your system has enough VRAM (>=16GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be benifecial in some cases and the result is the same since the two models are not dependant on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
+If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be benifecial in some cases and the result is the same since the two models are not dependant on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
 
 ## Command Line Options
 
