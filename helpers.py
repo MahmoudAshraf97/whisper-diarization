@@ -3,6 +3,7 @@ import wget
 from omegaconf import OmegaConf
 import json
 import shutil
+import platform
 
 punct_model_langs = [
     "en",
@@ -72,7 +73,11 @@ def create_config():
     pretrained_vad = "vad_multilingual_marblenet"
     pretrained_speaker_model = "titanet_large"
 
-    config.num_workers = 1  # Workaround for multiprocessing hanging with ipython issue
+    # num_workers = 1 results in "pickle" errors from Nvidia's NeMo on Silicon M chips
+    if (platform.machine() == "arm64") or (platform.machine() == "aarch64"):
+        config.num_workers = 0
+    else:
+        config.num_workers = 1  # Workaround for multiprocessing hanging with ipython issue
 
     output_dir = "nemo_outputs"  # os.path.join(ROOT, 'outputs')
     os.makedirs(output_dir, exist_ok=True)
@@ -258,8 +263,10 @@ def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
 def get_speaker_aware_transcript(sentences_speaker_mapping, f):
     for sentence_dict in sentences_speaker_mapping:
         sp = sentence_dict["speaker"]
+        st = sentence_dict["start_time"]
+        et = sentence_dict["end_time"]
         text = sentence_dict["text"]
-        f.write(f"\n\n{sp}: {text}")
+        f.write(f"\n\n{sp} [{st} - {et}]: {text}")
 
 
 def format_timestamp(

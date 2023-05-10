@@ -10,6 +10,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-a", "--audio", help="name of the target audio file", required=True
 )
+parser.add_argument(
+    "--device",
+    dest="device",
+    default="cuda",
+    help="if you have a GPU use 'cuda' (default), otherwise 'cpu'",
+)
 args = parser.parse_args()
 
 # convert audio to mono for NeMo combatibility
@@ -22,5 +28,5 @@ os.chdir(temp_path)
 soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config()).to("cuda")
+msdd_model = NeuralDiarizer(cfg=create_config()).to(args.device)
 msdd_model.diarize()

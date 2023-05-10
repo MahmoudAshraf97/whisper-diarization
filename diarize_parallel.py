@@ -7,7 +7,7 @@ import torch
 from deepmultilingualpunctuation import PunctuationModel
 import re
 import subprocess
-
+import time
 
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -30,8 +30,16 @@ parser.add_argument(
     help="name of the Whisper model to use",
 )
 
+parser.add_argument(
+    "--device",
+    dest="device",
+    default="cuda",
+    help="if you have a GPU use 'cuda' (default), otherwise 'cpu'",
+)
+
 args = parser.parse_args()
 
+start_time = time.time()
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -50,13 +58,19 @@ if args.stemming:
 else:
     vocal_target = args.audio
 
+print("Starting Nemo process with vocal_target: ", vocal_target)
 nemo_process = subprocess.Popen(
-    ["python3", "nemo_process.py", "-a", vocal_target],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
+    ["python3", "nemo_process.py", "-a", vocal_target, "--device", args.device],
+    #stdout=subprocess.PIPE,
+    #stderr=subprocess.PIPE,
 )
 # Run on GPU with FP16
-whisper_model = WhisperModel(args.model_name, device="cuda", compute_type="float16")
+if args.device == "cuda":
+    whisper_model = WhisperModel(
+        args.model_name, device="cuda", compute_type="float16")
+elif args.device == "cpu":
+    whisper_model = WhisperModel(
+        args.model_name, device="cpu", compute_type="int8")
 
 # or run on GPU with INT8
 # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
@@ -72,10 +86,11 @@ for segment in segments:
 
 # clear gpu vram
 del whisper_model
-torch.cuda.empty_cache()
+if args.device == "cuda":
+    torch.cuda.empty_cache()
 
 if info.language in wav2vec2_langs:
-    device = "cuda"
+    device = args.device
     alignment_model, metadata = whisperx.load_align_model(
         language_code=info.language, device=device
     )
@@ -85,7 +100,8 @@ if info.language in wav2vec2_langs:
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
     del alignment_model
-    torch.cuda.empty_cache()
+    if args.device == "cuda":
+        torch.cuda.empty_cache()
 else:
     word_timestamps = []
     for segment in whisper_results:
@@ -151,3 +167,6 @@ with open(f"{args.audio[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
 
 cleanup(temp_path)
+end_time = time.time()
+
+print("execution_time", end_time - start_time)
