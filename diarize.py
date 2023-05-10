@@ -13,6 +13,9 @@ import logging
 import time
 
 
+mdevices = {'cpu': 'cpu', 'cuda': 'cuda'}
+mtypes = {'cpu': 'int8', 'cuda': 'float16'}
+
 # Initialize parser
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -37,13 +40,11 @@ parser.add_argument(
 parser.add_argument(
     "--device",
     dest="device",
-    default="cuda",
-    help="if you have a GPU use 'cuda' (default), otherwise 'cpu'",
+    default="cuda" if torch.cuda.is_available() else "cpu",
+    help="if you have a GPU use 'cuda', otherwise 'cpu'",
 )
 
 args = parser.parse_args()
-
-start_time = time.time()
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -66,10 +67,8 @@ else:
 
 
 # Run on GPU with FP16
-if args.device == "cuda":
-    whisper_model = WhisperModel(args.model_name, device="cuda", compute_type="float16")
-elif args.device == "cpu":
-    whisper_model = WhisperModel(args.model_name, device="cpu", compute_type="int8")
+whisper_model = WhisperModel(
+    args.model_name, device=mdevices[args.device], compute_type=mtypes[args.device])
 
 # or run on GPU with INT8
 # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
@@ -84,8 +83,7 @@ for segment in segments:
     whisper_results.append(segment._asdict())
 # clear gpu vram
 del whisper_model
-if args.device == "cuda":
-    torch.cuda.empty_cache()
+torch.cuda.empty_cache()
 
 if info.language in wav2vec2_langs:
     device = args.device
@@ -98,8 +96,7 @@ if info.language in wav2vec2_langs:
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
     del alignment_model
-    if args.device == "cuda":
-        torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
 else:
     word_timestamps = []
     for segment in whisper_results:
@@ -115,13 +112,11 @@ os.makedirs(temp_path, exist_ok=True)
 soundfile.write(os.path.join(temp_path, "mono_file.wav"), signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-
 msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
 msdd_model.diarize()
 
 del msdd_model
-if args.device == "cuda":
-    torch.cuda.empty_cache()
+torch.cuda.empty_cache()
 
 # Reading timestamps <> Speaker Labels mapping
 

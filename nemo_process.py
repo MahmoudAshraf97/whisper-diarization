@@ -3,6 +3,7 @@ import argparse
 import os
 from helpers import *
 import librosa
+import torch
 import soundfile
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 
@@ -13,8 +14,8 @@ parser.add_argument(
 parser.add_argument(
     "--device",
     dest="device",
-    default="cuda",
-    help="if you have a GPU use 'cuda' (default), otherwise 'cpu'",
+    default="cuda" if torch.cuda.is_available() else "cpu",
+    help="if you have a GPU use 'cuda', otherwise 'cpu'",
 )
 args = parser.parse_args()
 
@@ -26,6 +27,5 @@ os.makedirs(temp_path, exist_ok=True)
 soundfile.write(os.path.join(temp_path, "mono_file.wav"), signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-
 msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
 msdd_model.diarize()

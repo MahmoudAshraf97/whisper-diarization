@@ -8,8 +8,9 @@ from deepmultilingualpunctuation import PunctuationModel
 import re
 import subprocess
 import logging
-import time
 
+mdevices = {'cpu': 'cpu', 'cuda': 'cuda'}
+mtypes = {'cpu': 'int8', 'cuda': 'float16'}
 
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -35,13 +36,11 @@ parser.add_argument(
 parser.add_argument(
     "--device",
     dest="device",
-    default="cuda",
-    help="if you have a GPU use 'cuda' (default), otherwise 'cpu'",
+    default="cuda" if torch.cuda.is_available() else "cpu",
+    help="if you have a GPU use 'cuda', otherwise 'cpu'",
 )
 
 args = parser.parse_args()
-
-start_time = time.time()
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -69,12 +68,8 @@ nemo_process = subprocess.Popen(
     #stderr=subprocess.PIPE,
 )
 # Run on GPU with FP16
-if args.device == "cuda":
-    whisper_model = WhisperModel(
-        args.model_name, device="cuda", compute_type="float16")
-elif args.device == "cpu":
-    whisper_model = WhisperModel(
-        args.model_name, device="cpu", compute_type="int8")
+whisper_model = WhisperModel(
+    args.model_name, device=mdevices[args.device], compute_type=mtypes[args.device])
 
 # or run on GPU with INT8
 # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
@@ -90,8 +85,7 @@ for segment in segments:
 
 # clear gpu vram
 del whisper_model
-if args.device == "cuda":
-    torch.cuda.empty_cache()
+torch.cuda.empty_cache()
 
 if info.language in wav2vec2_langs:
     device = args.device
@@ -104,8 +98,7 @@ if info.language in wav2vec2_langs:
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
     del alignment_model
-    if args.device == "cuda":
-        torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
 else:
     word_timestamps = []
     for segment in whisper_results:
@@ -169,6 +162,3 @@ with open(f"{args.audio[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
 
 cleanup(temp_path)
-end_time = time.time()
-
-print("execution_time", end_time - start_time)
