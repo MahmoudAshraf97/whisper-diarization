@@ -10,8 +10,6 @@ from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from deepmultilingualpunctuation import PunctuationModel
 import re
 import logging
-import time
-
 
 mdevices = {'cpu': 'cpu', 'cuda': 'cuda'}
 mtypes = {'cpu': 'int8', 'cuda': 'float16'}
@@ -173,6 +171,3 @@ with open(f"{args.audio[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
 
 cleanup(temp_path)
-end_time = time.time()
-
-print("execution_time", end_time - start_time)
