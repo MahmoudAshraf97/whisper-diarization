@@ -42,23 +42,21 @@ wav2vec2_langs = [
 ]
 
 
-def create_config():
-    data_dir = "./"
+def create_config(output_dir):
     DOMAIN_TYPE = "telephonic"  # Can be meeting or telephonic based on domain type of the audio file
     CONFIG_FILE_NAME = f"diar_infer_{DOMAIN_TYPE}.yaml"
     CONFIG_URL = f"https://raw.githubusercontent.com/NVIDIA/NeMo/main/examples/speaker_tasks/diarization/conf/inference/{CONFIG_FILE_NAME}"
-    MODEL_CONFIG = os.path.join(data_dir, CONFIG_FILE_NAME)
+    MODEL_CONFIG = os.path.join(output_dir, CONFIG_FILE_NAME)
     if not os.path.exists(MODEL_CONFIG):
-        MODEL_CONFIG = wget.download(CONFIG_URL, data_dir)
+        MODEL_CONFIG = wget.download(CONFIG_URL, output_dir)
 
     config = OmegaConf.load(MODEL_CONFIG)
 
-    ROOT = os.getcwd()
-    data_dir = os.path.join(ROOT, "data")
+    data_dir = os.path.join(output_dir, "data")
     os.makedirs(data_dir, exist_ok=True)
 
     meta = {
-        "audio_filepath": "mono_file.wav",
+        "audio_filepath": os.path.join(output_dir, "mono_file.wav"),
         "offset": 0,
         "duration": None,
         "label": "infer",
@@ -66,7 +64,7 @@ def create_config():
         "rttm_filepath": None,
         "uem_filepath": None,
     }
-    with open("data/input_manifest.json", "w") as fp:
+    with open(os.path.join(data_dir, "input_manifest.json"), "w") as fp:
         json.dump(meta, fp)
         fp.write("\n")
 
@@ -79,9 +77,7 @@ def create_config():
     else:
         config.num_workers = 1  # Workaround for multiprocessing hanging with ipython issue
 
-    output_dir = "nemo_outputs"  # os.path.join(ROOT, 'outputs')
-    os.makedirs(output_dir, exist_ok=True)
-    config.diarizer.manifest_filepath = "data/input_manifest.json"
+    config.diarizer.manifest_filepath = os.path.join(data_dir, "input_manifest.json")
     config.diarizer.out_dir = (
         output_dir  # Directory to store intermediate files and prediction outputs
     )

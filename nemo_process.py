@@ -22,11 +22,10 @@ args = parser.parse_args()
 signal, sample_rate = librosa.load(args.audio, sr=None)
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
-if not os.path.exists(temp_path):
-    os.mkdir(temp_path)
-os.chdir(temp_path)
-soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
+os.makedirs(temp_path, exist_ok=True)
+soundfile.write(os.path.join(temp_path, "mono_file.wav"), signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config()).to(args.device)
+
+msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
 msdd_model.diarize()

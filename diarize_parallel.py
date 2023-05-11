@@ -7,7 +7,9 @@ import torch
 from deepmultilingualpunctuation import PunctuationModel
 import re
 import subprocess
+import logging
 import time
+
 
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -45,16 +47,18 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python3 -m demucs.separate -n htdemucs_ft --two-stems=vocals "{args.audio}" -o "temp_outputs"'
+        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "temp_outputs"'
     )
 
     if return_code != 0:
-        print(
+        logging.warning(
             "Source splitting failed, using original audio file. Use --no-stem argument to disable it."
         )
         vocal_target = args.audio
     else:
-        vocal_target = f"temp_outputs/htdemucs_ft/{args.audio[:-4]}/vocals.wav"
+        vocal_target = os.path.join(
+            "temp_outputs", "htdemucs", os.path.basename(args.audio[:-4]), "vocals.wav"
+        )
 else:
     vocal_target = args.audio
 
@@ -112,10 +116,9 @@ else:
 nemo_process.communicate()
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
-output_dir = "nemo_outputs"
 
 speaker_ts = []
-with open(f"{temp_path}/{output_dir}/pred_rttms/mono_file.rttm", "r") as f:
+with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
     lines = f.readlines()
     for line in lines:
         line_list = line.split(" ")
@@ -159,7 +162,6 @@ else:
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
-os.chdir(ROOT)  # back to parent dir
 with open(f"{args.audio[:-4]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
 
