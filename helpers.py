@@ -259,10 +259,8 @@ def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
 def get_speaker_aware_transcript(sentences_speaker_mapping, f):
     for sentence_dict in sentences_speaker_mapping:
         sp = sentence_dict["speaker"]
-        st = sentence_dict["start_time"]
-        et = sentence_dict["end_time"]
         text = sentence_dict["text"]
-        f.write(f"\n\n{sp} [{st} - {et}]: {text}")
+        f.write(f"\n\n{sp}: {text}")
 
 
 def format_timestamp(
