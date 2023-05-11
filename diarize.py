@@ -9,6 +9,7 @@ import soundfile
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from deepmultilingualpunctuation import PunctuationModel
 import re
+import logging
 
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -38,16 +39,18 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python3 -m demucs.separate -n htdemucs_ft --two-stems=vocals "{args.audio}" -o "temp_outputs"'
+        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "temp_outputs"'
     )
 
     if return_code != 0:
-        print(
+        logging.warning(
             "Source splitting failed, using original audio file. Use --no-stem argument to disable it."
         )
         vocal_target = args.audio
     else:
-        vocal_target = f"temp_outputs/htdemucs_ft/{args.audio[:-4]}/vocals.wav"
+        vocal_target = os.path.join(
+            "temp_outputs", "htdemucs", os.path.basename(args.audio[:-4]), "vocals.wav"
+        )
 else:
     vocal_target = args.audio
 
@@ -93,13 +96,11 @@ else:
 signal, sample_rate = librosa.load(vocal_target, sr=None)
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
-if not os.path.exists(temp_path):
-    os.mkdir(temp_path)
-os.chdir(temp_path)
-soundfile.write("mono_file.wav", signal, sample_rate, "PCM_24")
+os.makedirs(temp_path, exist_ok=True)
+soundfile.write(os.path.join(temp_path, "mono_file.wav"), signal, sample_rate, "PCM_24")
 
 # Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config()).to("cuda")
+msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to("cuda")
 msdd_model.diarize()
 
 del msdd_model
@@ -107,10 +108,9 @@ torch.cuda.empty_cache()
 
 # Reading timestamps <> Speaker Labels mapping
 
-output_dir = "nemo_outputs"
 
 speaker_ts = []
-with open(f"{output_dir}/pred_rttms/mono_file.rttm", "r") as f:
+with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
     lines = f.readlines()
     for line in lines:
         line_list = line.split(" ")
@@ -154,7 +154,6 @@ else:
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
-os.chdir(ROOT)  # back to parent dir
 with open(f"{args.audio[:-4]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
 
