@@ -9,6 +9,7 @@ import re
 import subprocess
 import logging
 
+mtypes = {'cpu': 'int8', 'cuda': 'float16'}
 
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -31,8 +32,14 @@ parser.add_argument(
     help="name of the Whisper model to use",
 )
 
-args = parser.parse_args()
+parser.add_argument(
+    "--device",
+    dest="device",
+    default="cuda" if torch.cuda.is_available() else "cpu",
+    help="if you have a GPU use 'cuda', otherwise 'cpu'",
+)
 
+args = parser.parse_args()
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -53,13 +60,15 @@ if args.stemming:
 else:
     vocal_target = args.audio
 
+logging.info("Starting Nemo process with vocal_target: ", vocal_target)
 nemo_process = subprocess.Popen(
-    ["python3", "nemo_process.py", "-a", vocal_target],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
+    ["python3", "nemo_process.py", "-a", vocal_target, "--device", args.device],
+    #stdout=subprocess.PIPE,
+    #stderr=subprocess.PIPE,
 )
 # Run on GPU with FP16
-whisper_model = WhisperModel(args.model_name, device="cuda", compute_type="float16")
+whisper_model = WhisperModel(
+    args.model_name, device=args.device, compute_type=mtypes[args.device])
 
 # or run on GPU with INT8
 # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
@@ -78,12 +87,11 @@ del whisper_model
 torch.cuda.empty_cache()
 
 if info.language in wav2vec2_langs:
-    device = "cuda"
     alignment_model, metadata = whisperx.load_align_model(
-        language_code=info.language, device=device
+        language_code=info.language, device=args.device
     )
     result_aligned = whisperx.align(
-        whisper_results, alignment_model, metadata, vocal_target, device
+        whisper_results, alignment_model, metadata, vocal_target, args.device
     )
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
@@ -139,7 +147,7 @@ if info.language in punct_model_langs:
 
     wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:
-    print(
+    logging.warning(
         f'Punctuation restoration is not available for {whisper_results["language"]} language.'
     )
 
