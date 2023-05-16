@@ -9,7 +9,6 @@ import re
 import subprocess
 import logging
 
-mdevices = {'cpu': 'cpu', 'cuda': 'cuda'}
 mtypes = {'cpu': 'int8', 'cuda': 'float16'}
 
 # Initialize parser
@@ -69,7 +68,7 @@ nemo_process = subprocess.Popen(
 )
 # Run on GPU with FP16
 whisper_model = WhisperModel(
-    args.model_name, device=mdevices[args.device], compute_type=mtypes[args.device])
+    args.model_name, device=args.device, compute_type=mtypes[args.device])
 
 # or run on GPU with INT8
 # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
@@ -88,12 +87,11 @@ del whisper_model
 torch.cuda.empty_cache()
 
 if info.language in wav2vec2_langs:
-    device = args.device
     alignment_model, metadata = whisperx.load_align_model(
-        language_code=info.language, device=device
+        language_code=info.language, device=args.device
     )
     result_aligned = whisperx.align(
-        whisper_results, alignment_model, metadata, vocal_target, device
+        whisper_results, alignment_model, metadata, vocal_target, args.device
     )
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
