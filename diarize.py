@@ -157,7 +157,7 @@ if info.language in punct_model_langs:
     wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:
     logging.warning(
-        f'Punctuation restoration is not available for {whisper_results["language"]} language.'
+        f'Punctuation restoration is not available for {info.language} language.'
     )
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
