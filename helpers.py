@@ -112,11 +112,14 @@ def get_words_speaker_mapping(wrd_ts, spk_ts, word_anchor_option="start"):
     s, e, sp = spk_ts[0]
     wrd_pos, turn_idx = 0, 0
     wrd_spk_mapping = []
+
+    print(wrd_ts)
+
     for wrd_dict in wrd_ts:
         ws, we, wrd = (
             int(wrd_dict["start"] * 1000),
             int(wrd_dict["end"] * 1000),
-            wrd_dict["text"],
+            wrd_dict["word"],
         )
         wrd_pos = get_word_ts_anchor(ws, we, word_anchor_option)
         while wrd_pos > float(e):
