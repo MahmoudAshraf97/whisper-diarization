@@ -39,6 +39,10 @@ Whisper, WhisperX and NeMo parameters are coded into diarize.py and helpers.py, 
 ```
 pip install cython
 ```
+or
+```
+sudo apt update && sudo apt install cython3
+```
 ```
 # on Ubuntu or Debian
 sudo apt update && sudo apt install ffmpeg
