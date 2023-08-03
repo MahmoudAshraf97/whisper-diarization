@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/twitter/url/https/github.com/MahmoudAshraf97/whisper-diarization.svg?style=social" alt="Twitter">
   </a> 
   </a>
-  <a href="https://colab.research.google.com/drive/1fhjGIr_S_vERE9_F1UL033g5shVD-q5K">
+  <a href="https://colab.research.google.com/github/MahmoudAshraf97/whisper-diarization/blob/main/Whisper_Transcription_%2B_NeMo_Diarization.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
   </a>
  
