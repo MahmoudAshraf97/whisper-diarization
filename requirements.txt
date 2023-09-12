@@ -1,5 +1,5 @@
 wget
-nemo_toolkit[asr]==1.19.1
+nemo_toolkit[asr]==1.20.0
 transformers>=4.26.1
 faster-whisper==0.7.1
 git+https://github.com/m-bain/whisperX.git@4cb167a225c0ebaea127fd6049abfaa3af9f8bb4
