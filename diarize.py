@@ -4,8 +4,7 @@ from helpers import *
 from faster_whisper import WhisperModel
 import whisperx
 import torch
-import librosa
-import soundfile
+from pydub import AudioSegment
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from deepmultilingualpunctuation import PunctuationModel
 import re
@@ -101,11 +100,11 @@ else:
 
 
 # convert audio to mono for NeMo combatibility
-signal, sample_rate = librosa.load(vocal_target, sr=None)
+sound = AudioSegment.from_file(vocal_target).set_channels(1)
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
 os.makedirs(temp_path, exist_ok=True)
-soundfile.write(os.path.join(temp_path, "mono_file.wav"), signal, sample_rate, "PCM_24")
+sound.export(os.path.join(temp_path, "mono_file.wav"), format="wav")
 
 # Initialize NeMo MSDD diarization model
 msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
