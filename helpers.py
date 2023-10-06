@@ -30,7 +30,6 @@ wav2vec2_langs = [
     "ja",
     "zh",
     "uk",
-    "pt",
     "ar",
     "ru",
     "pl",
@@ -39,6 +38,14 @@ wav2vec2_langs = [
     "fa",
     "el",
     "tr",
+    "cs",
+    "da",
+    "he",
+    "vi",
+    "ko",
+    "ur",
+    "te",
+    "hi",
 ]
 
 
@@ -77,7 +84,9 @@ def create_config(output_dir):
     if (platform.machine() == "arm64") or (platform.machine() == "aarch64"):
         config.num_workers = 0
     else:
-        config.num_workers = 1  # Workaround for multiprocessing hanging with ipython issue
+        config.num_workers = (
+            1  # Workaround for multiprocessing hanging with ipython issue
+        )
 
     config.diarizer.manifest_filepath = os.path.join(data_dir, "input_manifest.json")
     config.diarizer.out_dir = (
@@ -118,7 +127,7 @@ def get_words_speaker_mapping(wrd_ts, spk_ts, word_anchor_option="start"):
         ws, we, wrd = (
             int(wrd_dict["start"] * 1000),
             int(wrd_dict["end"] * 1000),
-            wrd_dict["text"],
+            wrd_dict["word"],
         )
         wrd_pos = get_word_ts_anchor(ws, we, word_anchor_option)
         while wrd_pos > float(e):
@@ -300,6 +309,60 @@ def write_srt(transcript, file):
             file=file,
             flush=True,
         )
+
+
+def find_numeral_symbol_tokens(tokenizer):
+    numeral_symbol_tokens = [
+        -1,
+    ]
+    for token, token_id in tokenizer.get_vocab().items():
+        has_numeral_symbol = any(c in "0123456789%$£" for c in token)
+        if has_numeral_symbol:
+            numeral_symbol_tokens.append(token_id)
+    return numeral_symbol_tokens
+
+
+def _get_next_start_timestamp(word_timestamps, current_word_index):
+    # if current word is the last word
+    if current_word_index == len(word_timestamps) - 1:
+        return word_timestamps[current_word_index]["start"]
+
+    next_word_index = current_word_index + 1
+    while current_word_index < len(word_timestamps) - 1:
+        if word_timestamps[next_word_index].get("start") is None:
+            # if next word doesn't have a start timestamp
+            # merge it with the current word and delete it
+            word_timestamps[current_word_index]["word"] += (
+                " " + word_timestamps[next_word_index]["word"]
+            )
+
+            word_timestamps[next_word_index]["word"] = None
+            next_word_index += 1
+
+        else:
+            return word_timestamps[next_word_index]["start"]
+
+
+def filter_missing_timestamps(word_timestamps):
+    # handle the first and last word
+    if word_timestamps[0].get("start") is None:
+        word_timestamps[0]["start"] = 0
+        word_timestamps[0]["end"] = _get_next_start_timestamp(word_timestamps, 0)
+
+    result = [
+        word_timestamps[0],
+    ]
+
+    for i, ws in enumerate(word_timestamps[1:], start=1):
+        # if ws doesn't have a start and end
+        # use the previous end as start and next start as end
+        if ws.get("start") is None:
+            ws["start"] = word_timestamps[i - 1]["end"]
+            ws["end"] = _get_next_start_timestamp(word_timestamps, i)
+
+        if ws["word"] is not None:
+            result.append(ws)
+    return result
 
 
 def cleanup(path: str):

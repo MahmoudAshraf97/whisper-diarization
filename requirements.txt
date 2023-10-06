@@ -1,7 +1,7 @@
 wget
-nemo_toolkit[asr]==1.19.1
+nemo_toolkit[asr]==1.20.0
 transformers>=4.26.1
-faster-whisper==0.7.1
-git+https://github.com/m-bain/whisperX.git@4cb167a225c0ebaea127fd6049abfaa3af9f8bb4
+faster-whisper==0.9.0
+git+https://github.com/m-bain/whisperX.git@051047bb25b740fed2ea93ca737499c37e8dc9d4
 git+https://github.com/facebookresearch/demucs#egg=demucs
 deepmultilingualpunctuation
