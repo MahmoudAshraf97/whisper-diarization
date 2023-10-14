@@ -68,7 +68,7 @@ pip install -r requirements.txt
 python diarize.py -a AUDIO_FILE_NAME
 ```
 
-If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be benifecial in some cases and the result is the same since the two models are not dependant on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
+If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be benifecial in some cases and the result is the same since the two models are nondependent on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
 
 ## Command Line Options
 
@@ -85,6 +85,6 @@ If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` inste
 - Implement a maximum length per sentence for SRT
 - Improve Batch Processing
 
-## Aknowledgements
+## Acknowledgements
 Special Thanks for [@adamjonas](https://github.com/adamjonas) for supporting this project
 This work is based on [OpenAI's Whisper](https://github.com/openai/whisper) , [Faster Whisper](https://github.com/guillaumekln/faster-whisper) , [Nvidia NeMo](https://github.com/NVIDIA/NeMo) , and [Facebook's Demucs](https://github.com/facebookresearch/demucs)
