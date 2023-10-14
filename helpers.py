@@ -4,6 +4,8 @@ from omegaconf import OmegaConf
 import json
 import shutil
 import platform
+import nltk
+from whisperx.alignment import DEFAULT_ALIGN_MODELS_HF, DEFAULT_ALIGN_MODELS_TORCH
 
 punct_model_langs = [
     "en",
@@ -19,34 +21,9 @@ punct_model_langs = [
     "sk",
     "sl",
 ]
-wav2vec2_langs = [
-    "en",
-    "fr",
-    "de",
-    "es",
-    "it",
-    "nl",
-    "pt",
-    "ja",
-    "zh",
-    "uk",
-    "ar",
-    "ru",
-    "pl",
-    "hu",
-    "fi",
-    "fa",
-    "el",
-    "tr",
-    "cs",
-    "da",
-    "he",
-    "vi",
-    "ko",
-    "ur",
-    "te",
-    "hi",
-]
+wav2vec2_langs = list(DEFAULT_ALIGN_MODELS_TORCH.keys()) + list(
+    DEFAULT_ALIGN_MODELS_HF.keys()
+)
 
 
 def create_config(output_dir):
@@ -241,6 +218,7 @@ def get_realigned_ws_mapping_with_punctuation(
 
 
 def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
+    sentence_checker = nltk.tokenize.PunktSentenceTokenizer().text_contains_sentbreak
     s, e, spk = spk_ts[0]
     prev_spk = spk
 
@@ -250,7 +228,7 @@ def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
     for wrd_dict in word_speaker_mapping:
         wrd, spk = wrd_dict["word"], wrd_dict["speaker"]
         s, e = wrd_dict["start_time"], wrd_dict["end_time"]
-        if spk != prev_spk:
+        if spk != prev_spk or sentence_checker(snt["text"] + " " + wrd):
             snts.append(snt)
             snt = {
                 "speaker": f"Speaker {spk}",
@@ -268,10 +246,19 @@ def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
 
 
 def get_speaker_aware_transcript(sentences_speaker_mapping, f):
-    for sentence_dict in sentences_speaker_mapping:
+    previous_speaker = sentences_speaker_mapping[0]["speaker"]
+    text = sentences_speaker_mapping[0]["text"]
+
+    for sentence_dict in sentences_speaker_mapping[1:]:
         sp = sentence_dict["speaker"]
-        text = sentence_dict["text"]
-        f.write(f"\n\n{sp}: {text}")
+        sentence = sentence_dict["text"]
+
+        if sp != previous_speaker:
+            f.write(f"{previous_speaker}: {text}\n\n")
+            text = sentence
+            previous_speaker = sp
+        else:
+            text += " " + sentence
 
 
 def format_timestamp(
