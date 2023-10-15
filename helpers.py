@@ -343,7 +343,7 @@ def filter_missing_timestamps(word_timestamps):
     for i, ws in enumerate(word_timestamps[1:], start=1):
         # if ws doesn't have a start and end
         # use the previous end as start and next start as end
-        if ws.get("start") is None:
+        if ws.get("start") is None and ws.get("word") is not None:
             ws["start"] = word_timestamps[i - 1]["end"]
             ws["end"] = _get_next_start_timestamp(word_timestamps, i)
 
