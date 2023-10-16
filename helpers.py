@@ -3,7 +3,6 @@ import wget
 from omegaconf import OmegaConf
 import json
 import shutil
-import platform
 import nltk
 from whisperx.alignment import DEFAULT_ALIGN_MODELS_HF, DEFAULT_ALIGN_MODELS_TORCH
 
@@ -56,15 +55,7 @@ def create_config(output_dir):
 
     pretrained_vad = "vad_multilingual_marblenet"
     pretrained_speaker_model = "titanet_large"
-
-    # num_workers = 1 results in "pickle" errors from Nvidia's NeMo on Silicon M chips
-    if (platform.machine() == "arm64") or (platform.machine() == "aarch64"):
-        config.num_workers = 0
-    else:
-        config.num_workers = (
-            1  # Workaround for multiprocessing hanging with ipython issue
-        )
-
+    config.num_workers = 0
     config.diarizer.manifest_filepath = os.path.join(data_dir, "input_manifest.json")
     config.diarizer.out_dir = (
         output_dir  # Directory to store intermediate files and prediction outputs
