@@ -65,7 +65,10 @@ if args.stemming:
         vocal_target = args.audio
     else:
         vocal_target = os.path.join(
-            "temp_outputs", "htdemucs", os.path.basename(args.audio[:-4]), "vocals.wav"
+            "temp_outputs",
+            "htdemucs",
+            os.path.splitext(os.path.basename(args.audio))[0],
+            "vocals.wav",
         )
 else:
     vocal_target = args.audio
@@ -180,10 +183,10 @@ else:
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
-with open(f"{args.audio[:-4]}.txt", "w", encoding="utf-8-sig") as f:
+with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
 
-with open(f"{args.audio[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
+with open(f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
 
 cleanup(temp_path)
