@@ -2,6 +2,6 @@ wget
 nemo_toolkit[asr]==1.20.0
 transformers>=4.26.1
 faster-whisper==0.9.0
-git+https://github.com/m-bain/whisperX.git@051047bb25b740fed2ea93ca737499c37e8dc9d4
+git+https://github.com/m-bain/whisperX.git@49e0130e4e0c0d99d60715d76e65a71826a97109
 git+https://github.com/facebookresearch/demucs#egg=demucs
 deepmultilingualpunctuation
