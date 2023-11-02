@@ -237,10 +237,6 @@ def get_sentences_speaker_mapping(word_speaker_mapping, spk_ts):
 
 
 def get_speaker_aware_transcript(sentences_speaker_mapping, f):
-    # Make sure mapping list isn't empty
-    if not sentences_speaker_mapping:
-        return
-
     previous_speaker = sentences_speaker_mapping[0]["speaker"]
     f.write(f"{previous_speaker}: ")
 
@@ -254,7 +250,7 @@ def get_speaker_aware_transcript(sentences_speaker_mapping, f):
             previous_speaker = speaker
 
         # No matter what, write the current sentence
-        f.write(sentence)
+        f.write(sentence + " ")
 
 
 def format_timestamp(
