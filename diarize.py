@@ -43,6 +43,22 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--batch-size",
+    type=int,
+    dest="batch_size",
+    default=8,
+    help="Batch size for batched inference, reduce if you run out of memory, set to 0 for non-batched inference",
+)
+
+parser.add_argument(
+    "--language",
+    type=str,
+    default=None,
+    choices=whisper_langs,
+    help="Language spoken in the audio, specify None to perform language detection",
+)
+
+parser.add_argument(
     "--device",
     dest="device",
     default="cuda" if torch.cuda.is_available() else "cpu",
@@ -74,38 +90,34 @@ else:
     vocal_target = args.audio
 
 
-# Run on GPU with FP16
-whisper_model = WhisperModel(
-    args.model_name, device=args.device, compute_type=mtypes[args.device]
-)
+# Transcribe the audio file
+if args.batch_size != 0:
+    from transcription_helpers import transcribe_batched
 
-# or run on GPU with INT8
-# model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
-# or run on CPU with INT8
-# model = WhisperModel(model_size, device="cpu", compute_type="int8")
-
-if args.suppress_numerals:
-    numeral_symbol_tokens = find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
+    whisper_results, language = transcribe_batched(
+        vocal_target,
+        args.language,
+        args.batch_size,
+        args.model_name,
+        mtypes[args.device],
+        args.suppress_numerals,
+        args.device,
+    )
 else:
-    numeral_symbol_tokens = None
+    from transcription_helpers import transcribe
 
-segments, info = whisper_model.transcribe(
-    vocal_target,
-    beam_size=5,
-    word_timestamps=True,
-    suppress_tokens=numeral_symbol_tokens,
-    vad_filter=True,
-)
-whisper_results = []
-for segment in segments:
-    whisper_results.append(segment._asdict())
-# clear gpu vram
-del whisper_model
-torch.cuda.empty_cache()
+    whisper_results, language = transcribe(
+        vocal_target,
+        args.language,
+        args.model_name,
+        mtypes[args.device],
+        args.suppress_numerals,
+        args.device,
+    )
 
-if info.language in wav2vec2_langs:
+if language in wav2vec2_langs:
     alignment_model, metadata = whisperx.load_align_model(
-        language_code=info.language, device=args.device
+        language_code=language, device=args.device
     )
     result_aligned = whisperx.align(
         whisper_results, alignment_model, metadata, vocal_target, args.device
@@ -115,6 +127,12 @@ if info.language in wav2vec2_langs:
     del alignment_model
     torch.cuda.empty_cache()
 else:
+    assert (
+        args.batch_size == 0  # TODO: add a better check for word timestamps existence
+    ), (
+        f"Unsupported language: {language}, use --batch_size to 0"
+        " to generate word timestamps using whisper directly and fix this error."
+    )
     word_timestamps = []
     for segment in whisper_results:
         for word in segment["words"]:
@@ -149,7 +167,7 @@ with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
 
 wsm = get_words_speaker_mapping(word_timestamps, speaker_ts, "start")
 
-if info.language in punct_model_langs:
+if language in punct_model_langs:
     # restoring punctuation in the transcript to help realign the sentences
     punct_model = PunctuationModel(model="kredor/punctuate-all")
 
@@ -178,7 +196,7 @@ if info.language in punct_model_langs:
     wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:
     logging.warning(
-        f"Punctuation restoration is not available for {info.language} language."
+        f"Punctuation restoration is not available for {language} language."
     )
 
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)

@@ -5,6 +5,8 @@ import json
 import shutil
 import nltk
 from whisperx.alignment import DEFAULT_ALIGN_MODELS_HF, DEFAULT_ALIGN_MODELS_TORCH
+import logging
+from whisperx.utils import LANGUAGES, TO_LANGUAGE_CODE
 
 punct_model_langs = [
     "en",
@@ -22,6 +24,10 @@ punct_model_langs = [
 ]
 wav2vec2_langs = list(DEFAULT_ALIGN_MODELS_TORCH.keys()) + list(
     DEFAULT_ALIGN_MODELS_HF.keys()
+)
+
+whisper_langs = sorted(LANGUAGES.keys()) + sorted(
+    [k.title() for k in TO_LANGUAGE_CODE.keys()]
 )
 
 
@@ -355,3 +361,24 @@ def cleanup(path: str):
         shutil.rmtree(path)
     else:
         raise ValueError("Path {} is not a file or dir.".format(path))
+
+
+def process_language_arg(language: str, model_name: str):
+    """
+    Process the language argument to make sure it's valid and convert language names to language codes.
+    """
+    if language is not None:
+        language = language.lower()
+    if language not in LANGUAGES:
+        if language in TO_LANGUAGE_CODE:
+            language = TO_LANGUAGE_CODE[language]
+        else:
+            raise ValueError(f"Unsupported language: {language}")
+
+    if model_name.endswith(".en") and language != "en":
+        if language is not None:
+            logging.warning(
+                f"{model_name} is an English-only model but received '{language}'; using English instead."
+            )
+        language = "en"
+    return language
