@@ -193,12 +193,12 @@ if language in punct_model_langs:
                 word = word.rstrip(".")
             word_dict["word"] = word
 
-    wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 else:
     logging.warning(
-        f"Punctuation restoration is not available for {language} language."
+        f"Punctuation restoration is not available for {language} language. Using the original punctuation."
     )
 
+wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
 with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
