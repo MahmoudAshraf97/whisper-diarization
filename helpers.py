@@ -313,7 +313,7 @@ def _get_next_start_timestamp(word_timestamps, current_word_index):
         return word_timestamps[current_word_index]["start"]
 
     next_word_index = current_word_index + 1
-    while current_word_index < len(word_timestamps) - 1:
+    while next_word_index < len(word_timestamps) - 1:
         if word_timestamps[next_word_index].get("start") is None:
             # if next word doesn't have a start timestamp
             # merge it with the current word and delete it
