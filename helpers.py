@@ -307,7 +307,7 @@ def find_numeral_symbol_tokens(tokenizer):
     return numeral_symbol_tokens
 
 
-def _get_next_start_timestamp(word_timestamps, current_word_index):
+def _get_next_start_timestamp(word_timestamps, current_word_index, final_timestamp):
     # if current word is the last word
     if current_word_index == len(word_timestamps) - 1:
         return word_timestamps[current_word_index]["start"]
@@ -323,16 +323,24 @@ def _get_next_start_timestamp(word_timestamps, current_word_index):
 
             word_timestamps[next_word_index]["word"] = None
             next_word_index += 1
+            if next_word_index == len(word_timestamps):
+                return final_timestamp
 
         else:
             return word_timestamps[next_word_index]["start"]
 
 
-def filter_missing_timestamps(word_timestamps):
+def filter_missing_timestamps(
+    word_timestamps, initial_timestamp=0, final_timestamp=None
+):
     # handle the first and last word
     if word_timestamps[0].get("start") is None:
-        word_timestamps[0]["start"] = 0
-        word_timestamps[0]["end"] = _get_next_start_timestamp(word_timestamps, 0)
+        word_timestamps[0]["start"] = (
+            initial_timestamp if initial_timestamp is not None else 0
+        )
+        word_timestamps[0]["end"] = _get_next_start_timestamp(
+            word_timestamps, 0, final_timestamp
+        )
 
     result = [
         word_timestamps[0],
@@ -343,7 +351,7 @@ def filter_missing_timestamps(word_timestamps):
         # use the previous end as start and next start as end
         if ws.get("start") is None and ws.get("word") is not None:
             ws["start"] = word_timestamps[i - 1]["end"]
-            ws["end"] = _get_next_start_timestamp(word_timestamps, i)
+            ws["end"] = _get_next_start_timestamp(word_timestamps, i, final_timestamp)
 
         if ws["word"] is not None:
             result.append(ws)
