@@ -126,7 +126,7 @@ if language in wav2vec2_langs:
     )
     word_timestamps = filter_missing_timestamps(
         result_aligned["word_segments"],
-        initial_offset=whisper_results[0].get("start"),
+        initial_timestamp=whisper_results[0].get("start"),
         final_timestamp=whisper_results[-1].get("end"),
     )
     # clear gpu vram
