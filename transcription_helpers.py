@@ -63,6 +63,7 @@ def transcribe_batched(
     whisper_model = whisperx.load_model(
         model_name,
         device,
+        language=language,
         compute_type=compute_dtype,
         asr_options={"suppress_numerals": suppress_numerals},
     )
