@@ -1,4 +1,5 @@
 import argparse
+from urllib.parse import urlparse
 import os
 from helpers import *
 from faster_whisper import WhisperModel
@@ -9,6 +10,9 @@ from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from deepmultilingualpunctuation import PunctuationModel
 import re
 import logging
+import requests
+import urllib
+from io import BytesIO
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
@@ -21,7 +25,7 @@ parser.add_argument(
     "--no-stem",
     action="store_false",
     dest="stemming",
-    default=True,
+    default=False,
     help="Disables source separation."
     "This helps with long files that don't contain a lot of music.",
 )
@@ -38,7 +42,7 @@ parser.add_argument(
 parser.add_argument(
     "--whisper-model",
     dest="model_name",
-    default="medium.en",
+    default="large-v3",
     help="name of the Whisper model to use",
 )
 
@@ -142,9 +146,18 @@ else:
         for word in segment["words"]:
             word_timestamps.append({"word": word[2], "start": word[0], "end": word[1]})
 
+if isinstance(vocal_target, str):
+    if vocal_target.startswith("http://") or vocal_target.startswith("https://"):
+        req = urllib.request.Request(vocal_target, headers={'User-Agent': ''})
+        audio = urllib.request.urlopen(req).read()
+        if vocal_target.endswith(".wav"):
+            sound = AudioSegment.from_wav(BytesIO(audio)).set_channels(1)
+        elif vocal_target.endswith(".mp3"):
+            sound = AudioSegment.from_mp3(BytesIO(audio)).set_channels(1)
+    else:
+        sound = AudioSegment.from_file(vocal_target).set_channels(1)
 
 # convert audio to mono for NeMo combatibility
-sound = AudioSegment.from_file(vocal_target).set_channels(1)
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
 os.makedirs(temp_path, exist_ok=True)
@@ -204,6 +217,11 @@ else:
 
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
+
+if isinstance(args.audio, str):
+    if args.audio.startswith("http://") or args.audio.startswith("https://"):
+        parsed_url = urlparse(args.audio)
+        args.audio = os.path.basename(parsed_url.path)
 
 with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
