@@ -14,16 +14,16 @@
   </a>
   <a href="https://twitter.com/intent/tweet?text=&url=https%3A%2F%2Fgithub.com%2FMahmoudAshraf97%2Fwhisper-diarization">
   <img src="https://img.shields.io/twitter/url/https/github.com/MahmoudAshraf97/whisper-diarization.svg?style=social" alt="Twitter">
-  </a> 
+  </a>
   </a>
   <a href="https://colab.research.google.com/github/MahmoudAshraf97/whisper-diarization/blob/main/Whisper_Transcription_%2B_NeMo_Diarization.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
   </a>
- 
+
 </p>
 
 
-# 
+#
 Speaker Diarization pipeline based on OpenAI Whisper
 I'd like to thank [@m-bain](https://github.com/m-bain) for Wav2Vec2 forced alignment, [@mu4farooqi](https://github.com/mu4farooqi) for punctuation realignment algorithm
 
@@ -62,13 +62,27 @@ scoop install ffmpeg
 ```
 pip install -r requirements.txt
 ```
-## Usage 
+## Usage
 
 ```
 python diarize.py -a AUDIO_FILE_NAME
 ```
 
 If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be beneficial in some cases and the result is the same since the two models are nondependent on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
+
+## How to Transcribe Other Languages
+
+ There are three parameters needed to produce a diarized transcript with a non-supported language:
+
+1. wav2vec2 model name (`--wav2vec2-model`). Look for an appropriate wave2vec2 model in HuggingFace. For instance, this one for Indonesian language: [indonesian-nlp/wav2vec2-large-xlsr-indonesian](https://huggingface.co/indonesian-nlp/wav2vec2-large-xlsr-indonesian).
+2. Language, obviously
+3. Use the `large-v3` Whisper model as it supports a wider range of languages.
+
+For example, here is a command to diarize an Indonesian audio file:
+
+```
+python diarize.py -a AUDIO_FILE_NAME --language id --wav2vec2-model "indonesian-nlp/wav2vec2-large-xlsr-indonesian" --whisper-model large-v3
+```
 
 ## Command Line Options
 
@@ -79,6 +93,7 @@ If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` inste
 - `--device`: Choose which device to use, defaults to "cuda" if available
 - `--language`: Manually select language, useful if language detection failed
 - `--batch-size`: Batch size for batched inference, reduce if you run out of memory, set to 0 for non-batched inference
+- `--wav2vec2-model`: The model used for Wav2Vec2. When transcribing audio with an unsupported language, it will override the language setting for model selection (but you'd still need to include the appropriate language parameter)
 
 ## Known Limitations
 - Overlapping speakers are yet to be addressed, a possible approach would be to separate the audio file and isolate only one speaker, then feed it into the pipeline but this will need much more computation

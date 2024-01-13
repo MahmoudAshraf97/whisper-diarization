@@ -59,6 +59,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--wav2vec2-model",
+    dest="wav2vec2_model_name",
+    default=None,
+    help="name of the Wav2Vec2 model to use.",
+)
+
+parser.add_argument(
     "--device",
     dest="device",
     default="cuda" if torch.cuda.is_available() else "cpu",
@@ -115,9 +122,13 @@ else:
         args.device,
     )
 
-if language in wav2vec2_langs:
+
+wav2vec2_model_name = args.wav2vec2_model_name
+
+if language in wav2vec2_langs or wav2vec2_model_name is not None:
     alignment_model, metadata = whisperx.load_align_model(
-        language_code=language, device=args.device
+        language_code=language, device=args.device,
+        model_name=wav2vec2_model_name
     )
     result_aligned = whisperx.align(
         whisper_results, alignment_model, metadata, vocal_target, args.device

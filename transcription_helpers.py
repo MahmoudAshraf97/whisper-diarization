@@ -26,7 +26,7 @@ def transcribe(
     else:
         numeral_symbol_tokens = None
 
-    if language is not None and language in wav2vec2_langs:
+    if language is not None:
         word_timestamps = False
     else:
         word_timestamps = True
