@@ -1,4 +1,5 @@
 import argparse
+from urllib.parse import urlparse
 import os
 from helpers import *
 from faster_whisper import WhisperModel
@@ -8,6 +9,7 @@ from deepmultilingualpunctuation import PunctuationModel
 import re
 import subprocess
 import logging
+import requests
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
@@ -20,7 +22,7 @@ parser.add_argument(
     "--no-stem",
     action="store_false",
     dest="stemming",
-    default=True,
+    default=False,
     help="Disables source separation."
     "This helps with long files that don't contain a lot of music.",
 )
@@ -37,7 +39,7 @@ parser.add_argument(
 parser.add_argument(
     "--whisper-model",
     dest="model_name",
-    default="medium.en",
+    default="large-v3",
     help="name of the Whisper model to use",
 )
 
@@ -45,7 +47,7 @@ parser.add_argument(
     "--batch-size",
     type=int,
     dest="batch_size",
-    default=8,
+    default=16,
     help="Batch size for batched inference, reduce if you run out of memory, set to 0 for non-batched inference",
 )
 
@@ -65,6 +67,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -193,6 +196,11 @@ else:
 
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
+
+if isinstance(args.audio, str):
+    if args.audio.startswith("http://") or args.audio.startswith("https://"):
+        parsed_url = urlparse(args.audio)
+        args.audio = os.path.basename(parsed_url.path)
 
 with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
