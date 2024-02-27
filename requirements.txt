@@ -1,5 +1,5 @@
 wget
 nemo_toolkit[asr]==1.22.0
-git+https://github.com/m-bain/whisperX.git@d6562c26da467ca49866a4173c0e723f3837f367
+git+https://github.com/m-bain/whisperX.git@78dcfaab51005aa703ee21375f81ed31bc248560
 git+https://github.com/facebookresearch/demucs#egg=demucs
 deepmultilingualpunctuation
