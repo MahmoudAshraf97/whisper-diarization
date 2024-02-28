@@ -8,6 +8,7 @@ def transcribe(
     compute_dtype: str,
     suppress_numerals: bool,
     device: str,
+    initial_prompt: str,
 ):
     from faster_whisper import WhisperModel
     from helpers import find_numeral_symbol_tokens, wav2vec2_langs
@@ -38,6 +39,7 @@ def transcribe(
         word_timestamps=word_timestamps,  # TODO: disable this if the language is supported by wav2vec2
         suppress_tokens=numeral_symbol_tokens,
         vad_filter=True,
+        initial_prompt=initial_prompt,
     )
     whisper_results = []
     for segment in segments:
@@ -56,6 +58,7 @@ def transcribe_batched(
     compute_dtype: str,
     suppress_numerals: bool,
     device: str,
+    initial_prompt: str,
 ):
     import whisperx
 
@@ -64,7 +67,7 @@ def transcribe_batched(
         model_name,
         device,
         compute_type=compute_dtype,
-        asr_options={"suppress_numerals": suppress_numerals},
+        asr_options={"suppress_numerals": suppress_numerals, "initial_prompt" : initial_prompt},
     )
     audio = whisperx.load_audio(audio_file)
     result = whisper_model.transcribe(audio, language=language, batch_size=batch_size)

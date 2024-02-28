@@ -65,6 +65,13 @@ parser.add_argument(
     help="if you have a GPU use 'cuda', otherwise 'cpu'",
 )
 
+parser.add_argument(
+    "--prompt",
+    dest="prompt",
+    default="",
+    help="Initial prompt for transcription",
+)
+
 args = parser.parse_args()
 
 if args.stemming:
@@ -102,6 +109,7 @@ if args.batch_size != 0:
         mtypes[args.device],
         args.suppress_numerals,
         args.device,
+        args.prompt,
     )
 else:
     from transcription_helpers import transcribe
@@ -113,6 +121,7 @@ else:
         mtypes[args.device],
         args.suppress_numerals,
         args.device,
+        args.prompt,
     )
 
 if language in wav2vec2_langs:
