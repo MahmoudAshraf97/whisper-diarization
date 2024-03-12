@@ -1,7 +1,5 @@
 wget
-git+https://github.com/NVIDIA/NeMo.git@df9f0d1e522aec2bafec5902fe87c6ee74eaef96#egg=nemo_toolkit[asr]
-transformers>=4.26.1
-faster-whisper==0.9.0
-git+https://github.com/m-bain/whisperX.git@49e0130e4e0c0d99d60715d76e65a71826a97109
+nemo_toolkit[asr]==1.22.0
+git+https://github.com/m-bain/whisperX.git@78dcfaab51005aa703ee21375f81ed31bc248560
 git+https://github.com/facebookresearch/demucs#egg=demucs
 deepmultilingualpunctuation
