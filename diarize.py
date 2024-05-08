@@ -123,7 +123,7 @@ whisper_results, language, audio_waveform = transcribe_batched(
 # Forced Alignment
 alignment_model, alignment_tokenizer, alignment_dictionary = load_alignment_model(
     args.device,
-    dtype=torch.float16,
+    dtype=torch.float16 if args.device == "cuda" else torch.float32,
 )
 
 audio_waveform = (
