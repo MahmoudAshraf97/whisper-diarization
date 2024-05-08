@@ -1,10 +1,20 @@
 import argparse
 import os
-from helpers import *
-from faster_whisper import WhisperModel
+from helpers import (
+    whisper_langs,
+    wav2vec2_langs,
+    punct_model_langs,
+    filter_missing_timestamps,
+    create_config,
+    get_words_speaker_mapping,
+    get_realigned_ws_mapping_with_punctuation,
+    get_sentences_speaker_mapping,
+    get_speaker_aware_transcript,
+    write_srt,
+    cleanup,
+)
 import whisperx
 import torch
-from pydub import AudioSegment
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from deepmultilingualpunctuation import PunctuationModel
 import re
@@ -177,7 +187,7 @@ if language in punct_model_langs:
 
     words_list = list(map(lambda x: x["word"], wsm))
 
-    labled_words = punct_model.predict(words_list)
+    labled_words = punct_model.predict(words_list, chunk_size=230)
 
     ending_puncts = ".?!"
     model_puncts = ".,;:!?"
