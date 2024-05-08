@@ -15,6 +15,7 @@ from helpers import (
 )
 import whisperx
 import torch
+from pydub import AudioSegment
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from deepmultilingualpunctuation import PunctuationModel
 import re
