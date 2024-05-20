@@ -2,9 +2,8 @@ import argparse
 import os
 from helpers import (
     whisper_langs,
+    langs_to_iso,
     punct_model_langs,
-    wav2vec2_langs,
-    filter_missing_timestamps,
     get_words_speaker_mapping,
     get_realigned_ws_mapping_with_punctuation,
     get_sentences_speaker_mapping,
@@ -12,12 +11,20 @@ from helpers import (
     write_srt,
     cleanup,
 )
-import whisperx
 import torch
 from deepmultilingualpunctuation import PunctuationModel
 import re
 import subprocess
 import logging
+from ctc_forced_aligner import (
+    load_alignment_model,
+    generate_emissions,
+    preprocess_text,
+    get_alignments,
+    get_spans,
+    postprocess_results,
+)
+from transcription_helpers import transcribe_batched
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
@@ -103,56 +110,51 @@ nemo_process = subprocess.Popen(
     ["python3", "nemo_process.py", "-a", vocal_target, "--device", args.device],
 )
 # Transcribe the audio file
-if args.batch_size != 0:
-    from transcription_helpers import transcribe_batched
+whisper_results, language, audio_waveform = transcribe_batched(
+    vocal_target,
+    args.language,
+    args.batch_size,
+    args.model_name,
+    mtypes[args.device],
+    args.suppress_numerals,
+    args.device,
+)
 
-    whisper_results, language = transcribe_batched(
-        vocal_target,
-        args.language,
-        args.batch_size,
-        args.model_name,
-        mtypes[args.device],
-        args.suppress_numerals,
-        args.device,
-    )
-else:
-    from transcription_helpers import transcribe
+# Forced Alignment
+alignment_model, alignment_tokenizer, alignment_dictionary = load_alignment_model(
+    args.device,
+    dtype=torch.float16 if args.device == "cuda" else torch.float32,
+)
 
-    whisper_results, language = transcribe(
-        vocal_target,
-        args.language,
-        args.model_name,
-        mtypes[args.device],
-        args.suppress_numerals,
-        args.device,
-    )
+audio_waveform = (
+    torch.from_numpy(audio_waveform)
+    .to(alignment_model.dtype)
+    .to(alignment_model.device)
+)
+emissions, stride = generate_emissions(
+    alignment_model, audio_waveform, batch_size=args.batch_size
+)
 
-if language in wav2vec2_langs:
-    alignment_model, metadata = whisperx.load_align_model(
-        language_code=language, device=args.device
-    )
-    result_aligned = whisperx.align(
-        whisper_results, alignment_model, metadata, vocal_target, args.device
-    )
-    word_timestamps = filter_missing_timestamps(
-        result_aligned["word_segments"],
-        initial_timestamp=whisper_results[0].get("start"),
-        final_timestamp=whisper_results[-1].get("end"),
-    )
-    # clear gpu vram
-    del alignment_model
-    torch.cuda.empty_cache()
-else:
-    assert (
-        args.batch_size == 0  # TODO: add a better check for word timestamps existence
-    ), (
-        f"Unsupported language: {language}, use --batch_size to 0"
-        " to generate word timestamps using whisper directly and fix this error."
-    )
-    word_timestamps = []
-    for segment in whisper_results:
-        for word in segment["words"]:
-            word_timestamps.append({"word": word[2], "start": word[0], "end": word[1]})
+del alignment_model
+torch.cuda.empty_cache()
+
+full_transcript = "".join(segment["text"] for segment in whisper_results)
+
+tokens_starred, text_starred = preprocess_text(
+    full_transcript,
+    romanize=True,
+    language=langs_to_iso[language],
+)
+
+segments, blank_id = get_alignments(
+    emissions,
+    tokens_starred,
+    alignment_dictionary,
+)
+
+spans = get_spans(tokens_starred, segments, alignment_tokenizer.decode(blank_id))
+
+word_timestamps = postprocess_results(text_starred, spans, stride)
 
 # Reading timestamps <> Speaker Labels mapping
 nemo_process.communicate()
