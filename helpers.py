@@ -328,7 +328,7 @@ def get_last_word_idx_of_sentence(word_idx, word_list, max_words):
     )
     right_idx = word_idx
     while (
-        right_idx < len(word_list)
+        right_idx < len(word_list) - 1
         and right_idx - word_idx < max_words
         and not is_word_sentence_end(right_idx)
     ):
