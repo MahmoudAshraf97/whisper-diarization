@@ -10,6 +10,7 @@ def transcribe(
     device: str,
 ):
     from faster_whisper import WhisperModel
+
     from helpers import find_numeral_symbol_tokens, wav2vec2_langs
 
     # Faster Whisper non-batched

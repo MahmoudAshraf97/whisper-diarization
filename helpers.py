@@ -1,11 +1,12 @@
+import json
+import logging
 import os
+import shutil
+
+import nltk
 import wget
 from omegaconf import OmegaConf
-import json
-import shutil
-import nltk
 from whisperx.alignment import DEFAULT_ALIGN_MODELS_HF, DEFAULT_ALIGN_MODELS_TORCH
-import logging
 from whisperx.utils import LANGUAGES, TO_LANGUAGE_CODE
 
 punct_model_langs = [
