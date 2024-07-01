@@ -35,13 +35,12 @@ This repository combines Whisper ASR capabilities with Voice Activity Detection 
 
 WhisperX and NeMo parameters are coded into diarize.py and helpers.py, I will add the CLI arguments to change them later
 ## Installation
-`PyTorch`, `FFMPEG` and `Cython` are needed as prerequisites to install the requirements
+`FFMPEG` and `Cython` are needed as prerequisites to install the requirements
 ```
-pip install cython torch
+pip install cython
 ```
 or
 ```
-pip install torch
 sudo apt update && sudo apt install cython3
 ```
 ```
@@ -59,6 +58,9 @@ choco install ffmpeg
 
 # on Windows using Scoop (https://scoop.sh/)
 scoop install ffmpeg
+
+# on Windows using WinGet (https://github.com/microsoft/winget-cli)
+winget install ffmpeg
 ```
 ```
 pip install -r requirements.txt
