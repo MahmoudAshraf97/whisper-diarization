@@ -159,7 +159,14 @@ spans = get_spans(tokens_starred, segments, alignment_tokenizer.decode(blank_id)
 word_timestamps = postprocess_results(text_starred, spans, stride, scores)
 
 # Reading timestamps <> Speaker Labels mapping
-nemo_process.communicate()
+
+nemo_return_code = nemo_process.wait()
+nemo_error_trace = nemo_process.stderr.read()
+assert nemo_return_code == 0, (
+    "Diarization failed with the following error:"
+    f"\n{nemo_error_trace.decode('utf-8')}"
+)
+
 ROOT = os.getcwd()
 temp_path = os.path.join(ROOT, "temp_outputs")
 
