@@ -148,13 +148,13 @@ tokens_starred, text_starred = preprocess_text(
     language=langs_to_iso[language],
 )
 
-segments, scores, blank_id = get_alignments(
+segments, scores, blank_token = get_alignments(
     emissions,
     tokens_starred,
     alignment_tokenizer,
 )
 
-spans = get_spans(tokens_starred, segments, alignment_tokenizer.decode(blank_id))
+spans = get_spans(tokens_starred, segments, blank_token)
 
 word_timestamps = postprocess_results(text_starred, spans, stride, scores)
 
