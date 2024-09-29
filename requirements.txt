@@ -1,5 +1,5 @@
 wget
-nemo_toolkit[asr]>=2
+nemo_toolkit[asr]>=2.dev
 git+https://github.com/m-bain/whisperX.git@78dcfaab51005aa703ee21375f81ed31bc248560
 git+https://github.com/adefossez/demucs.git
 git+https://github.com/oliverguhr/deepmultilingualpunctuation.git
