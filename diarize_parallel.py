@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 
+import faster_whisper
 import torch
 from ctc_forced_aligner import (
     generate_emissions,
@@ -17,6 +18,7 @@ from deepmultilingualpunctuation import PunctuationModel
 
 from helpers import (
     cleanup,
+    find_numeral_symbol_tokens,
     get_realigned_ws_mapping_with_punctuation,
     get_sentences_speaker_mapping,
     get_speaker_aware_transcript,
@@ -26,7 +28,6 @@ from helpers import (
     whisper_langs,
     write_srt,
 )
-from transcription_helpers import transcribe_batched
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
@@ -113,15 +114,27 @@ nemo_process = subprocess.Popen(
     stderr=subprocess.PIPE,
 )
 # Transcribe the audio file
-whisper_results, language, audio_waveform = transcribe_batched(
-    vocal_target,
-    args.language,
-    args.batch_size,
-    args.model_name,
-    mtypes[args.device],
-    args.suppress_numerals,
-    args.device,
+whisper_model = faster_whisper.WhisperModel(
+    args.model_name, device=args.device, compute_type=mtypes[args.device]
 )
+whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
+audio_waveform = faster_whisper.decode_audio(vocal_target)
+
+transcript_segments, info = whisper_pipeline.transcribe(
+    audio_waveform,
+    args.language,
+    suppress_tokens=(
+        find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
+        if args.suppress_numerals
+        else [-1]
+    ),
+    batch_size=args.batch_size,
+)
+full_transcript = "".join(segment.text for segment in transcript_segments)
+
+# clear gpu vram
+del whisper_model, whisper_pipeline
+torch.cuda.empty_cache()
 
 # Forced Alignment
 alignment_model, alignment_tokenizer = load_alignment_model(
@@ -129,24 +142,19 @@ alignment_model, alignment_tokenizer = load_alignment_model(
     dtype=torch.float16 if args.device == "cuda" else torch.float32,
 )
 
-audio_waveform = (
-    torch.from_numpy(audio_waveform)
-    .to(alignment_model.dtype)
-    .to(alignment_model.device)
-)
 emissions, stride = generate_emissions(
-    alignment_model, audio_waveform, batch_size=args.batch_size
+    alignment_model,
+    audio_waveform.to(alignment_model.dtype).to(alignment_model.device),
+    batch_size=args.batch_size,
 )
 
 del alignment_model
 torch.cuda.empty_cache()
 
-full_transcript = "".join(segment["text"] for segment in whisper_results)
-
 tokens_starred, text_starred = preprocess_text(
     full_transcript,
     romanize=True,
-    language=langs_to_iso[language],
+    language=langs_to_iso[info.language],
 )
 
 segments, scores, blank_token = get_alignments(
@@ -182,7 +190,7 @@ with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
 
 wsm = get_words_speaker_mapping(word_timestamps, speaker_ts, "start")
 
-if language in punct_model_langs:
+if info.language in punct_model_langs:
     # restoring punctuation in the transcript to help realign the sentences
     punct_model = PunctuationModel(model="kredor/punctuate-all")
 
@@ -210,7 +218,7 @@ if language in punct_model_langs:
 
 else:
     logging.warning(
-        f"Punctuation restoration is not available for {language} language. Using the original punctuation."
+        f"Punctuation restoration is not available for {info.language} language. Using the original punctuation."
     )
 
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)
