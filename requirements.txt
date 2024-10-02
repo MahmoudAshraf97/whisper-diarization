@@ -1,5 +1,6 @@
 wget
 nemo_toolkit[asr]>=2.dev
+nltk
 git+https://github.com/MahmoudAshraf97/faster-whisper.git@same_vad
 git+https://github.com/adefossez/demucs.git
 git+https://github.com/oliverguhr/deepmultilingualpunctuation.git
