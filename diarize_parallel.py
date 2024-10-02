@@ -123,16 +123,31 @@ whisper_model = faster_whisper.WhisperModel(
 whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
 audio_waveform = faster_whisper.decode_audio(vocal_target)
 
-transcript_segments, info = whisper_pipeline.transcribe(
-    audio_waveform,
-    language,
-    suppress_tokens=(
-        find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
-        if args.suppress_numerals
-        else [-1]
-    ),
-    batch_size=args.batch_size,
-)
+if args.batch_size > 0:
+    transcript_segments, info = whisper_pipeline.transcribe(
+        audio_waveform,
+        language,
+        suppress_tokens=(
+            find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
+            if args.suppress_numerals
+            else [-1]
+        ),
+        batch_size=args.batch_size,
+        without_timestamps=True,
+    )
+else:
+    transcript_segments, info = whisper_model.transcribe(
+        audio_waveform,
+        language,
+        suppress_tokens=(
+            find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
+            if args.suppress_numerals
+            else [-1]
+        ),
+        without_timestamps=True,
+        vad_filter=True,
+    )
+    
 full_transcript = "".join(segment.text for segment in transcript_segments)
 
 # clear gpu vram
