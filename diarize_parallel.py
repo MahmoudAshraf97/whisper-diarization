@@ -24,6 +24,7 @@ from helpers import (
     get_speaker_aware_transcript,
     get_words_speaker_mapping,
     langs_to_iso,
+    process_language_arg,
     punct_model_langs,
     whisper_langs,
     write_srt,
@@ -85,6 +86,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+language = process_language_arg(args.language)
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -122,7 +124,7 @@ audio_waveform = faster_whisper.decode_audio(vocal_target)
 
 transcript_segments, info = whisper_pipeline.transcribe(
     audio_waveform,
-    args.language,
+    language,
     suppress_tokens=(
         find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
         if args.suppress_numerals

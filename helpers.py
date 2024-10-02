@@ -565,16 +565,15 @@ def process_language_arg(language: str, model_name: str):
     """
     if language is not None:
         language = language.lower()
-    if language not in LANGUAGES:
-        if language in TO_LANGUAGE_CODE:
-            language = TO_LANGUAGE_CODE[language]
-        else:
-            raise ValueError(f"Unsupported language: {language}")
+        if language not in LANGUAGES:
+            if language in TO_LANGUAGE_CODE:
+                language = TO_LANGUAGE_CODE[language]
+            else:
+                raise ValueError(f"Unsupported language: {language}")
 
-    if model_name.endswith(".en") and language != "en":
-        if language is not None:
-            logging.warning(
-                f"{model_name} is an English-only model but received '{language}'; using English instead."
+        if model_name.endswith(".en") and language != "en":
+            raise ValueError(
+                f"{model_name} is an English-only model but choosen language is '{language}'"
             )
-        language = "en"
+
     return language
