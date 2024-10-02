@@ -88,7 +88,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-language = process_language_arg(args.language, args.model_name)
+language = process_language_arg(args.language)
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
