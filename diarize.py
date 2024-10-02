@@ -24,6 +24,7 @@ from helpers import (
     get_speaker_aware_transcript,
     get_words_speaker_mapping,
     langs_to_iso,
+    process_language_arg,
     punct_model_langs,
     whisper_langs,
     write_srt,
@@ -86,6 +87,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+language = process_language_arg(args.language)
 
 if args.stemming:
     # Isolate vocals from the rest of the audio
@@ -114,7 +116,7 @@ else:
 
 whisper_results, language, audio_waveform = transcribe_batched(
     vocal_target,
-    args.language,
+    language,
     args.batch_size,
     args.model_name,
     mtypes[args.device],
