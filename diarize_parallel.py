@@ -116,6 +116,7 @@ nemo_process = subprocess.Popen(
     stderr=subprocess.PIPE,
 )
 # Transcribe the audio file
+
 whisper_model = faster_whisper.WhisperModel(
     args.model_name, device=args.device, compute_type=mtypes[args.device]
 )
@@ -137,6 +138,7 @@ full_transcript = "".join(segment.text for segment in transcript_segments)
 # clear gpu vram
 del whisper_model, whisper_pipeline
 torch.cuda.empty_cache()
+
 
 # Forced Alignment
 alignment_model, alignment_tokenizer = load_alignment_model(
