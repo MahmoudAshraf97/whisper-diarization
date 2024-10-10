@@ -1,0 +1,53 @@
+name: Test Run
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * TUE'
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-latest
+        - windows-latest
+        - macos-latest
+        
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install ffmpeg
+      if: runner.os == 'Linux'
+      run: sudo apt update && sudo apt install -y ffmpeg
+
+    - name: Install ffmpeg
+      if: runner.os == 'macOS'
+      run: brew install ffmpeg
+    
+    - name: Install ffmpeg
+      if: runner.os == 'Windows'
+      run: choco install ffmpeg
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip cython
+        # This is to avoid installing cuda dependencies
+        python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+        python -m pip install -c constraints.txt -r requirements.txt
+
+    - name: Test running a file
+      run: |
+        python diarize.py -a "./tests/assets/test.opus" --whisper-model tiny.en
