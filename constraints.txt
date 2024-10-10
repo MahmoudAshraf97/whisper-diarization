@@ -1,4 +1,1 @@
 huggingface_hub<0.24
-nemo_toolkit==2.0.0rc0 ; python_version >= "3.10"
-nemo_toolkit==1.23.0 ; sys_platform == "linux" and python_version < "3.10"
-nemo_toolkit==1.21.0 ; sys_platform != "linux" and python_version < "3.10"
