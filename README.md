@@ -1,5 +1,9 @@
 <h1 align="center">Speaker Diarization Using OpenAI Whisper</h1>
 <p align="center">
+  <a href="https://github.com/MahmoudAshraf97/whisper-diarization/actions/workflows/test_run.yml">
+    <img src="https://github.com/MahmoudAshraf97/whisper-diarization/actions/workflows/test_run.yml/badge.svg"
+         alt="Build Status">
+  </a>
   <a href="https://github.com/MahmoudAshraf97/whisper-diarization/stargazers">
     <img src="https://img.shields.io/github/stars/MahmoudAshraf97/whisper-diarization.svg?colorA=orange&colorB=orange&logo=github"
          alt="GitHub stars">
