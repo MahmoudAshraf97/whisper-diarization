@@ -8,15 +8,18 @@ def transcribe(
     compute_dtype: str,
     suppress_numerals: bool,
     device: str,
+    batch_size: int,
 ):
-    from faster_whisper import WhisperModel
+    import faster_whisper
 
-    from helpers import find_numeral_symbol_tokens, wav2vec2_langs
+    from helpers import find_numeral_symbol_tokens
 
     # Faster Whisper non-batched
     # Run on GPU with FP16
-    whisper_model = WhisperModel(model_name, device=device, compute_type=compute_dtype)
-
+    whisper_model = faster_whisper.WhisperModel(
+        model_name, device=device, compute_type=compute_dtype
+    )
+    whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
     # or run on GPU with INT8
     # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
     # or run on CPU with INT8
@@ -25,20 +28,13 @@ def transcribe(
     if suppress_numerals:
         numeral_symbol_tokens = find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
     else:
-        numeral_symbol_tokens = None
+        numeral_symbol_tokens = [-1]
 
-    if language is not None and language in wav2vec2_langs:
-        word_timestamps = False
-    else:
-        word_timestamps = True
-
-    segments, info = whisper_model.transcribe(
+    segments, info = whisper_pipeline.transcribe(
         audio_file,
         language=language,
-        beam_size=5,
-        word_timestamps=word_timestamps,  # TODO: disable this if the language is supported by wav2vec2
         suppress_tokens=numeral_symbol_tokens,
-        vad_filter=True,
+        batch_size=batch_size,
     )
     whisper_results = []
     for segment in segments:
