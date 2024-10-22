@@ -99,3 +99,14 @@ If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` inste
 ## Acknowledgements
 Special Thanks for [@adamjonas](https://github.com/adamjonas) for supporting this project
 This work is based on [OpenAI's Whisper](https://github.com/openai/whisper) , [Faster Whisper](https://github.com/guillaumekln/faster-whisper) , [Nvidia NeMo](https://github.com/NVIDIA/NeMo) , and [Facebook's Demucs](https://github.com/facebookresearch/demucs)
+
+## Citation
+If you use this in your research, please cite the paper:
+
+```bibtex
+@article{hassouna2024whisperdiarization,
+  title={Whisper Diarization: Speaker Diarization Using OpenAI Whisper},
+  author={Ashraf, Mahmoud},
+  year={2024}
+}
+```
