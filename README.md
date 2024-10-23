@@ -101,10 +101,10 @@ Special Thanks for [@adamjonas](https://github.com/adamjonas) for supporting thi
 This work is based on [OpenAI's Whisper](https://github.com/openai/whisper) , [Faster Whisper](https://github.com/guillaumekln/faster-whisper) , [Nvidia NeMo](https://github.com/NVIDIA/NeMo) , and [Facebook's Demucs](https://github.com/facebookresearch/demucs)
 
 ## Citation
-If you use this in your research, please cite the paper:
+If you use this in your research, please cite the project:
 
 ```bibtex
-@article{hassouna2024whisperdiarization,
+@unpublished{hassouna2024whisperdiarization,
   title={Whisper Diarization: Speaker Diarization Using OpenAI Whisper},
   author={Ashraf, Mahmoud},
   year={2024}
