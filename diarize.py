@@ -3,8 +3,10 @@ import logging
 import os
 import re
 
+import faster_whisper
 import torch
 import torchaudio
+
 from ctc_forced_aligner import (
     generate_emissions,
     get_alignments,
@@ -19,6 +21,7 @@ from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from helpers import (
     cleanup,
     create_config,
+    find_numeral_symbol_tokens,
     get_realigned_ws_mapping_with_punctuation,
     get_sentences_speaker_mapping,
     get_speaker_aware_transcript,
@@ -29,7 +32,6 @@ from helpers import (
     whisper_langs,
     write_srt,
 )
-from transcription_helpers import transcribe_batched
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
@@ -68,7 +70,8 @@ parser.add_argument(
     type=int,
     dest="batch_size",
     default=8,
-    help="Batch size for batched inference, reduce if you run out of memory, set to 0 for non-batched inference",
+    help="Batch size for batched inference, reduce if you run out of memory, "
+    "set to 0 for original whisper longform inference",
 )
 
 parser.add_argument(
@@ -93,12 +96,13 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "temp_outputs"'
+        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs'
     )
 
     if return_code != 0:
         logging.warning(
-            "Source splitting failed, using original audio file. Use --no-stem argument to disable it."
+            "Source splitting failed, using original audio file. "
+            "Use --no-stem argument to disable it."
         )
         vocal_target = args.audio
     else:
@@ -114,15 +118,39 @@ else:
 
 # Transcribe the audio file
 
-whisper_results, language, audio_waveform = transcribe_batched(
-    vocal_target,
-    language,
-    args.batch_size,
-    args.model_name,
-    mtypes[args.device],
-    args.suppress_numerals,
-    args.device,
+whisper_model = faster_whisper.WhisperModel(
+    args.model_name, device=args.device, compute_type=mtypes[args.device]
 )
+whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
+audio_waveform = faster_whisper.decode_audio(vocal_target)
+suppress_tokens = (
+    find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
+    if args.suppress_numerals
+    else [-1]
+)
+
+if args.batch_size > 0:
+    transcript_segments, info = whisper_pipeline.transcribe(
+        audio_waveform,
+        language,
+        suppress_tokens=suppress_tokens,
+        batch_size=args.batch_size,
+        without_timestamps=True,
+    )
+else:
+    transcript_segments, info = whisper_model.transcribe(
+        audio_waveform,
+        language,
+        suppress_tokens=suppress_tokens,
+        without_timestamps=True,
+        vad_filter=True,
+    )
+
+full_transcript = "".join(segment.text for segment in transcript_segments)
+
+# clear gpu vram
+del whisper_model, whisper_pipeline
+torch.cuda.empty_cache()
 
 # Forced Alignment
 alignment_model, alignment_tokenizer = load_alignment_model(
@@ -130,24 +158,19 @@ alignment_model, alignment_tokenizer = load_alignment_model(
     dtype=torch.float16 if args.device == "cuda" else torch.float32,
 )
 
-audio_waveform = (
-    torch.from_numpy(audio_waveform)
-    .to(alignment_model.dtype)
-    .to(alignment_model.device)
-)
 emissions, stride = generate_emissions(
-    alignment_model, audio_waveform, batch_size=args.batch_size
+    alignment_model,
+    audio_waveform.to(alignment_model.dtype).to(alignment_model.device),
+    batch_size=args.batch_size,
 )
 
 del alignment_model
 torch.cuda.empty_cache()
 
-full_transcript = "".join(segment["text"] for segment in whisper_results)
-
 tokens_starred, text_starred = preprocess_text(
     full_transcript,
     romanize=True,
-    language=langs_to_iso[language],
+    language=langs_to_iso[info.language],
 )
 
 segments, scores, blank_token = get_alignments(
@@ -194,7 +217,7 @@ with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
 
 wsm = get_words_speaker_mapping(word_timestamps, speaker_ts, "start")
 
-if language in punct_model_langs:
+if info.language in punct_model_langs:
     # restoring punctuation in the transcript to help realign the sentences
     punct_model = PunctuationModel(model="kredor/punctuate-all")
 
@@ -222,7 +245,8 @@ if language in punct_model_langs:
 
 else:
     logging.warning(
-        f"Punctuation restoration is not available for {language} language. Using the original punctuation."
+        f"Punctuation restoration is not available for {info.language} language."
+        " Using the original punctuation."
     )
 
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)
