@@ -6,6 +6,7 @@ import subprocess
 
 import faster_whisper
 import torch
+
 from ctc_forced_aligner import (
     generate_emissions,
     get_alignments,
@@ -58,7 +59,7 @@ parser.add_argument(
 parser.add_argument(
     "--whisper-model",
     dest="model_name",
-    default="medium.en",
+    default="large-v2",
     help="name of the Whisper model to use",
 )
 
@@ -66,8 +67,9 @@ parser.add_argument(
     "--batch-size",
     type=int,
     dest="batch_size",
-    default=8,
-    help="Batch size for batched inference, reduce if you run out of memory, set to 0 for non-batched inference",
+    default=4,
+    help="Batch size for batched inference, reduce if you run out of memory, "
+    "set to 0 for original whisper longform inference",
 )
 
 parser.add_argument(
@@ -92,12 +94,13 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "temp_outputs"'
+        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs'
     )
 
     if return_code != 0:
         logging.warning(
-            "Source splitting failed, using original audio file. Use --no-stem argument to disable it."
+            "Source splitting failed, using original audio file. "
+            "Use --no-stem argument to disable it."
         )
         vocal_target = args.audio
     else:
@@ -122,16 +125,17 @@ whisper_model = faster_whisper.WhisperModel(
 )
 whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
 audio_waveform = faster_whisper.decode_audio(vocal_target)
+suppress_tokens = (
+    find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
+    if args.suppress_numerals
+    else [-1]
+)
 
 if args.batch_size > 0:
     transcript_segments, info = whisper_pipeline.transcribe(
         audio_waveform,
         language,
-        suppress_tokens=(
-            find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
-            if args.suppress_numerals
-            else [-1]
-        ),
+        suppress_tokens=suppress_tokens,
         batch_size=args.batch_size,
         without_timestamps=True,
     )
@@ -139,11 +143,7 @@ else:
     transcript_segments, info = whisper_model.transcribe(
         audio_waveform,
         language,
-        suppress_tokens=(
-            find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
-            if args.suppress_numerals
-            else [-1]
-        ),
+        suppress_tokens=suppress_tokens,
         without_timestamps=True,
         vad_filter=True,
     )
@@ -237,7 +237,8 @@ if info.language in punct_model_langs:
 
 else:
     logging.warning(
-        f"Punctuation restoration is not available for {info.language} language. Using the original punctuation."
+        f"Punctuation restoration is not available for {info.language} language."
+        " Using the original punctuation."
     )
 
 wsm = get_realigned_ws_mapping_with_punctuation(wsm)

@@ -2,6 +2,7 @@ import argparse
 import os
 
 import torch
+
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from pydub import AudioSegment
 
