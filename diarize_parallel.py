@@ -163,7 +163,9 @@ alignment_model, alignment_tokenizer = load_alignment_model(
 
 emissions, stride = generate_emissions(
     alignment_model,
-    audio_waveform.to(alignment_model.dtype).to(alignment_model.device),
+    torch.from_numpy(audio_waveform)
+    .to(alignment_model.dtype)
+    .to(alignment_model.device),
     batch_size=args.batch_size,
 )
 
