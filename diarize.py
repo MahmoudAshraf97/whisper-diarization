@@ -135,14 +135,12 @@ if args.batch_size > 0:
         language,
         suppress_tokens=suppress_tokens,
         batch_size=args.batch_size,
-        without_timestamps=True,
     )
 else:
     transcript_segments, info = whisper_model.transcribe(
         audio_waveform,
         language,
         suppress_tokens=suppress_tokens,
-        without_timestamps=True,
         vad_filter=True,
     )
 
