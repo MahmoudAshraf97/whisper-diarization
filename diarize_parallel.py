@@ -94,7 +94,7 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python3 -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs'
+        f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs'
     )
 
     if return_code != 0:
@@ -115,7 +115,7 @@ else:
 
 logging.info("Starting Nemo process with vocal_target: ", vocal_target)
 nemo_process = subprocess.Popen(
-    ["python3", "nemo_process.py", "-a", vocal_target, "--device", args.device],
+    ["python", "nemo_process.py", "-a", vocal_target, "--device", args.device],
     stderr=subprocess.PIPE,
 )
 # Transcribe the audio file
