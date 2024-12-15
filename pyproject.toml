@@ -1,0 +1,26 @@
+[project]
+name = "whisper-diarization"
+version = "0.1.0"
+description = "Speaker Diarization pipeline based on OpenAI Whisper"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ctc-forced-aligner",
+    "deepmultilingualpunctuation",
+    "demucs",
+    "wget",
+    "nemo_toolkit[asr]==2.0.0rc0",
+    "nltk",
+    "faster-whisper>=1.1.0",
+]
+
+[tool.uv.sources]
+ctc-forced-aligner = { git = "https://github.com/MahmoudAshraf97/ctc-forced-aligner.git" }
+deepmultilingualpunctuation = { git = "https://github.com/oliverguhr/deepmultilingualpunctuation.git" }
+demucs = { git = "https://github.com/MahmoudAshraf97/demucs.git" }
+
+[tool.uv]
+constraint-dependencies = [
+    "huggingface_hub<0.24",
+    "numpy<2",
+]
