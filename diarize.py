@@ -25,6 +25,7 @@ from helpers import (
     get_realigned_ws_mapping_with_punctuation,
     get_sentences_speaker_mapping,
     get_speaker_aware_transcript,
+    get_speaker_aware_transcript_json,
     get_words_speaker_mapping,
     langs_to_iso,
     process_language_arg,
@@ -254,6 +255,9 @@ ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
 with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
     get_speaker_aware_transcript(ssm, f)
+
+with open(f"{os.path.splitext(args.audio)[0]}.json", "w", encoding="utf-8-sig") as f:
+    get_speaker_aware_transcript_json(ssm, f)
 
 with open(f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)

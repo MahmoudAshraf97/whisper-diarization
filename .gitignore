@@ -1,7 +1,8 @@
 __pycache__/
 *.srt
 *.txt
+*.json
 *.wav
 *.mp3
 *.m4a
-
+/.idea

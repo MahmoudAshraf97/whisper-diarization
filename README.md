@@ -1,7 +1,5 @@
 <h1 align="center">Speaker Diarization Using OpenAI Whisper</h1>
 
-[![FreePalestine.Dev](https://freepalestine.dev/header/1)](https://freepalestine.dev)
-
 <p align="center">
   <a href="https://github.com/MahmoudAshraf97/whisper-diarization/actions/workflows/test_run.yml">
     <img src="https://github.com/MahmoudAshraf97/whisper-diarization/actions/workflows/test_run.yml/badge.svg"
