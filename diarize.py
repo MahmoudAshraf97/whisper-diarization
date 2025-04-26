@@ -223,7 +223,19 @@ if info.language in punct_model_langs:
 
     words_list = list(map(lambda x: x["word"], wsm))
 
-    labled_words = punct_model.predict(words_list, chunk_size=230)
+    while chunk_size > 0:
+        try:
+            labled_words = punct_model.predict(words_list, chunk_size=chunk_size)
+            break  # success
+        except Exception as e:
+            print(f"Chunk size {chunk_size} failed with error: {e}")
+            if first_attempt:
+                chunk_size = 100
+                first_attempt = False
+            else:
+                chunk_size -= 20
+            if chunk_size <= 0:
+                raise RuntimeError("Failed to predict even with minimal chunk size.") from e
 
     ending_puncts = ".?!"
     model_puncts = ".,;:!?"
