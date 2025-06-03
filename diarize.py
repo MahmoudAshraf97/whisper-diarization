@@ -108,9 +108,12 @@ args = parser.parse_args()
 language = process_language_arg(args.language, args.model_name)
 
 if args.stemming:
+    # Isolate vocals from the rest of the audio
+    
     return_code = os.system(
         f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs --device "{args.device}"'
     )
+
     if return_code != 0:
         logging.warning(
             "Source splitting failed, using original audio file. "
@@ -126,6 +129,8 @@ if args.stemming:
         )
 else:
     vocal_target = args.audio
+
+# Transcribe the audio file
 
 whisper_model = faster_whisper.WhisperModel(
     args.model_name, device=args.device, compute_type=mtypes[args.device]
