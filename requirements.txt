@@ -5,4 +5,4 @@ faster-whisper>=1.1.0
 audio-separator[gpu]
 git+https://github.com/oliverguhr/deepmultilingualpunctuation.git
 git+https://github.com/MahmoudAshraf97/ctc-forced-aligner.git
-
+yt-dlp
