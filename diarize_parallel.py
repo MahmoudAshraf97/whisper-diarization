@@ -33,6 +33,10 @@ from helpers import (
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
+pidInt = os.getpid()
+pidStr = str(pidInt)
+temp_outputs_dir = f"temp_outputs_{pidStr}"
+
 # Initialize parser
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -94,7 +98,7 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs --device "{args.device}"'
+        f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "{temp_outputs_dir}" --device "{args.device}"'
     )
 
     if return_code != 0:
@@ -105,7 +109,7 @@ if args.stemming:
         vocal_target = args.audio
     else:
         vocal_target = os.path.join(
-            "temp_outputs",
+            temp_outputs_dir,
             "htdemucs",
             os.path.splitext(os.path.basename(args.audio))[0],
             "vocals.wav",
@@ -196,7 +200,7 @@ assert nemo_return_code == 0, (
 )
 
 ROOT = os.getcwd()
-temp_path = os.path.join(ROOT, "temp_outputs")
+temp_path = os.path.join(ROOT, temp_outputs_dir)
 
 speaker_ts = []
 with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
