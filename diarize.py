@@ -35,6 +35,9 @@ from helpers import (
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
+pid = os.getpid()
+temp_outputs_dir = f"temp_outputs_{pid}"
+
 # Initialize parser
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -96,7 +99,7 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o temp_outputs --device "{args.device}"'
+        f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "{temp_outputs_dir}" --device "{args.device}"'
     )
 
     if return_code != 0:
@@ -107,7 +110,7 @@ if args.stemming:
         vocal_target = args.audio
     else:
         vocal_target = os.path.join(
-            "temp_outputs",
+            temp_outputs_dir,
             "htdemucs",
             os.path.splitext(os.path.basename(args.audio))[0],
             "vocals.wav",
@@ -186,7 +189,7 @@ word_timestamps = postprocess_results(text_starred, spans, stride, scores)
 
 # convert audio to mono for NeMo combatibility
 ROOT = os.getcwd()
-temp_path = os.path.join(ROOT, "temp_outputs")
+temp_path = os.path.join(ROOT, temp_outputs_dir)
 os.makedirs(temp_path, exist_ok=True)
 torchaudio.save(
     os.path.join(temp_path, "mono_file.wav"),

@@ -8,6 +8,9 @@ from pydub import AudioSegment
 
 from helpers import create_config
 
+pid = os.getpid()
+temp_outputs_dir = f"temp_outputs_{pid}"
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-a", "--audio", help="name of the target audio file", required=True
@@ -23,7 +26,7 @@ args = parser.parse_args()
 # convert audio to mono for NeMo combatibility
 sound = AudioSegment.from_file(args.audio).set_channels(1)
 ROOT = os.getcwd()
-temp_path = os.path.join(ROOT, "temp_outputs")
+temp_path = os.path.join(ROOT, temp_outputs_dir)
 os.makedirs(temp_path, exist_ok=True)
 sound.export(os.path.join(temp_path, "mono_file.wav"), format="wav")
 
