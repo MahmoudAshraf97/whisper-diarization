@@ -35,9 +35,8 @@ from helpers import (
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
-pidInt = os.getpid()
-pidStr = str(pidInt)
-temp_outputs_dir = f"temp_outputs_{pidStr}"
+pid = os.getpid()
+temp_outputs_dir = f"temp_outputs_{pid}"
 
 # Initialize parser
 parser = argparse.ArgumentParser()
