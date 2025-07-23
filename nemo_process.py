@@ -8,7 +8,7 @@ from pydub import AudioSegment
 
 from helpers import create_config
 
-pid = os.getpid()
+pid = os.getppid()
 temp_outputs_dir = f"temp_outputs_{pid}"
 
 parser = argparse.ArgumentParser()
