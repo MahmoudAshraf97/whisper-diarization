@@ -8,6 +8,9 @@ from pydub import AudioSegment
 
 from helpers import create_config
 
+pid = os.getppid()
+temp_outputs_dir = f"temp_outputs_{pid}"
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-a", "--audio", help="name of the target audio file", required=True
@@ -18,11 +21,7 @@ parser.add_argument(
     default="cuda" if torch.cuda.is_available() else "cpu",
     help="if you have a GPU use 'cuda', otherwise 'cpu'",
 )
-
 args = parser.parse_args()
-
-pid = os.getppid()
-temp_outputs_dir = f"temp_outputs_{pid}"
 
 # convert audio to mono for NeMo combatibility
 sound = AudioSegment.from_file(args.audio).set_channels(1)
