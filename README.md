@@ -41,16 +41,9 @@ This repository combines Whisper ASR capabilities with Voice Activity Detection 
 
 Whisper and NeMo parameters are coded into diarize.py and helpers.py, I will add the CLI arguments to change them later
 ## Installation
-Python >= `3.10` is needed, `3.9` will work but you'll need to manually install the requirements one by one.
+### Install dependencies
 
-`FFMPEG` and `Cython` are needed as prerequisites to install the requirements
-```
-pip install cython
-```
-or
-```
-sudo apt update && sudo apt install cython3
-```
+####`FFMPEG` 
 ```
 # on Ubuntu or Debian
 sudo apt update && sudo apt install ffmpeg
@@ -70,14 +63,32 @@ scoop install ffmpeg
 # on Windows using WinGet (https://github.com/microsoft/winget-cli)
 winget install ffmpeg
 ```
+
+#### `uv` python package manager
 ```
-pip install -c constraints.txt -r requirements.txt
+# on Linux or MacOS
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# on Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
+
+See the [uv installation docs](https://docs.astral.sh/uv/getting-started/installation/) for more installation methods.
+
+#### Pytorch
+If you want to use a `torch` and `torchaudio` distrbution other than the default one provided by PyPI (which is CUDA 12.4 on Linux, CPU on Windows and CPU/MPS on MacOS), you can install it using the pip instructions from [pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/), using `uv pip ...` instead of `pip ...`/`pip3 ...`. 
+
+For example, to install torch and torchaudio for CUDA 12.1 on Linux:
+```
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
 ## Usage 
 
 ```
-python diarize.py -a AUDIO_FILE_NAME
+uv run diarize.py -a AUDIO_FILE_NAME
 ```
+By default, `uv` will ensure a correct version of python is used, setup a virtual environment, and install the required python dependencies. If you wish to customise this behaviour, please see the [uv documentation](https://docs.astral.sh/uv/getting-started/installation/).
 
 If your system has enough VRAM (>=10GB), you can use `diarize_parallel.py` instead, the difference is that it runs NeMo in parallel with Whisper, this can be beneficial in some cases and the result is the same since the two models are nondependent on each other. This is still experimental, so expect errors and sharp edges. Your feedback is welcome.
 
