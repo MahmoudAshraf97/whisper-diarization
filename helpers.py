@@ -287,15 +287,15 @@ def create_config(output_dir):
 
     config.diarizer.speaker_embeddings.model_path = pretrained_speaker_model
     config.diarizer.oracle_vad = (
-        False  # compute VAD provided with model_path to vad config
+        True  # compute VAD provided with model_path to vad config
     )
     config.diarizer.clustering.parameters.oracle_num_speakers = False
 
     # Here, we use our in-house pretrained NeMo VAD model
-    config.diarizer.vad.model_path = pretrained_vad
-    config.diarizer.vad.parameters.onset = 0.8
-    config.diarizer.vad.parameters.offset = 0.6
-    config.diarizer.vad.parameters.pad_offset = -0.05
+    #config.diarizer.vad.model_path = pretrained_vad
+    #config.diarizer.vad.parameters.onset = 0.8
+    #config.diarizer.vad.parameters.offset = 0.6
+    #config.diarizer.vad.parameters.pad_offset = -0.05
     config.diarizer.msdd_model.model_path = (
         "diar_msdd_telephonic"  # Telephonic speaker diarization model
     )

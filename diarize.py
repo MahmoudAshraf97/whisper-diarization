@@ -6,6 +6,12 @@ import re
 import faster_whisper
 import torch
 import torchaudio
+import json
+from whisperx.vads.pyannote import Pyannote
+
+from dotenv import load_dotenv
+load_dotenv()
+hf_token = os.getenv("HF_TOKEN")
 
 from ctc_forced_aligner import (
     generate_emissions,
@@ -147,7 +153,29 @@ else:
         vad_filter=True,
     )
 
+transcript_segments = list(transcript_segments)
+print(f"[DEBUG] Number of segments: {len(transcript_segments)}")
+
 full_transcript = "".join(segment.text for segment in transcript_segments)
+
+# Print and save the Whisper segments for debugging
+print("[DEBUG] Whisper segments:")
+print(f"[DEBUG] Number of segments: {len(transcript_segments)}")
+if not transcript_segments:
+    print("[DEBUG] transcript_segments is empty.")
+for segment in transcript_segments:
+    print(segment)
+
+# Save Whisper segments to file
+if args.audio and transcript_segments:
+    seg_file = f"{os.path.splitext(args.audio)[0]}_whisper_segments.txt"
+    try:
+        with open(seg_file, 'w', encoding='utf-8') as f:
+            for segment in transcript_segments:
+                f.write(f"{segment.start:.2f} --> {segment.end:.2f}: {segment.text.strip()}\n")
+        print(f"[INFO] Whisper segments saved to {seg_file}")
+    except Exception as e:
+        logging.warning(f"Failed to save Whisper segments: {e}")
 
 # clear gpu vram
 del whisper_model, whisper_pipeline
@@ -198,9 +226,93 @@ torchaudio.save(
     channels_first=True,
 )
 
+# pyannote_model = PyannoteModel.from_pretrained("pyannote/segmentation-3.0", 
+#   use_auth_token=hf_token)
+# vad_pipeline = VoiceActivityDetection(segmentation=pyannote_model)
+# HYPER_PARAMETERS = {
+#     "min_duration_on": 0, # Threshold for small non_speech deletion
+#     "min_duration_off": 0.2, # Threshold for short speech segment deletion
+# }
+# vad_pipeline.instantiate(HYPER_PARAMETERS)  
+# payannote_vad = vad_pipeline(vocal_target)
 
+# from vad.silero import apply_vad  # Silero VAD is deprecated, now using Pyannote VAD
+'''from whisperx.vads.pyannote import VoiceActivitySegmentation
+
+
+# Load the segmentation model
+segmentation_model = PyannoteModel.from_pretrained( "pyannote/segmentation",use_auth_token=hf_token).to(args.device)
+
+# Perform segmentation
+HYPER_PARAMETERS = {
+    "onset": 0.5,
+    "offset": 0.363,
+    "min_duration_on": 0.1,
+    "min_duration_off": 0.1
+}
+segmentation = VoiceActivitySegmentation(segmentation=segmentation_model)
+segmentation.instantiate(HYPER_PARAMETERS)
+segmentation_output = segmentation({'uri': os.path.splitext(os.path.basename(vocal_target))[0],
+                                    'audio': vocal_target})'''
+vad_pipeline = Pyannote(
+    device=args.device,
+    use_auth_token=hf_token,
+    vad_onset=0.5,
+    vad_offset=0.363,
+)
+
+segmentation_raw = vad_pipeline({
+    "uri": os.path.splitext(os.path.basename(vocal_target))[0],
+    "audio": vocal_target
+})
+
+segmentation_output = Pyannote.merge_chunks(
+    segmentation_raw,
+    chunk_size=30,
+    onset=0.5,
+    offset=0.363
+)
+
+print(f"[DEBUG] Number of VAD segments: {len(segmentation_output)}")
+for seg in segmentation_output[:5]:  # Just print first 5
+    print(seg)
+
+mono_file_path = os.path.join(temp_path, "mono_file.wav")
+pyannote_manifest = os.path.join(temp_path, "pyannote_manifest.json")
+print(f"[DEBUG] Sample VAD segment: {segmentation_output[0]}")
+print(f"[DEBUG] Type: {type(segmentation_output[0])}")
+with open(pyannote_manifest, "w") as f:
+    for speech in segmentation_output:
+        for start, end in speech["segments"]:
+            segment = {
+                "audio_filepath": mono_file_path,
+                "offset": start,
+                "duration": end - start,
+                "label": "speech",
+                "uniq_id": "mono_file"  # Using a static ID for simplicity
+            }
+            f.write(f"{json.dumps(segment)}\n")
+    '''for speech in segmentation_output:
+        segment = {
+            "audio_filepath": mono_file_path,
+            "offset": speech[0],
+            "duration": speech[1]-speech[0],
+            "label": "speech",
+            "uniq_id": segmentation_input['uri']
+        }
+        f.write(f"{json.dumps(segment)}\n")'''
+    '''for speech in segmentation_output:
+        segment = {
+            "audio_filepath": mono_file_path,
+            "offset": speech["start"],
+            "duration": speech["end"] - speech["start"],
+            "label": "speech",
+            "uniq_id": os.path.splitext(os.path.basename(vocal_target))[0]
+        }
+        f.write(f"{json.dumps(segment)}\n")'''   
 # Initialize NeMo MSDD diarization model
 msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
+msdd_model._cfg.diarizer.manifest_filepath = pyannote_manifest
 msdd_model.diarize()
 
 del msdd_model

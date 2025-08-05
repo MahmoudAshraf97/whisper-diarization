@@ -17,24 +17,24 @@ diarizer:
   out_dir: ???
   oracle_vad: False # If True, uses RTTM files provided in the manifest file to get speech activity (VAD) timestamps
   collar: 0.25 # Collar value for scoring
-  ignore_overlap: True # Consider or ignore overlap segments while scoring
+  ignore_overlap: False # Consider or ignore overlap segments while scoring
 
   vad:
-    model_path: vad_multilingual_marblenet # .nemo local model path or pretrained VAD model name 
-    external_vad_manifest: null # This option is provided to use external vad and provide its speech activity labels for speaker embeddings extraction. Only one of model_path or external_vad_manifest should be set
+    model_path: null #vad_multilingual_marblenet # .nemo local model path or pretrained VAD model name 
+    external_vad_manifest: temp_outputs/pyannote_manifest.json #null # This option is provided to use external vad and provide its speech activity labels for speaker embeddings extraction. Only one of model_path or external_vad_manifest should be set
 
-    parameters: # Tuned parameters for CH109 (using the 11 multi-speaker sessions as dev set) 
-      window_length_in_sec: 0.15  # Window length in sec for VAD context input 
-      shift_length_in_sec: 0.01 # Shift length in sec for generate frame level VAD prediction
-      smoothing: "median" # False or type of smoothing method (eg: median)
-      overlap: 0.5 # Overlap ratio for overlapped mean/median smoothing filter
-      onset: 0.1 # Onset threshold for detecting the beginning and end of a speech 
-      offset: 0.1 # Offset threshold for detecting the end of a speech
-      pad_onset: 0.1 # Adding durations before each speech segment 
-      pad_offset: 0 # Adding durations after each speech segment 
-      min_duration_on: 0 # Threshold for small non_speech deletion
-      min_duration_off: 0.2 # Threshold for short speech segment deletion
-      filter_speech_first: True 
+    #parameters: # Tuned parameters for CH109 (using the 11 multi-speaker sessions as dev set) 
+    #  window_length_in_sec: 0.15  # Window length in sec for VAD context input 
+    #  shift_length_in_sec: 0.01 # Shift length in sec for generate frame level VAD prediction
+    #  smoothing: False # False or type of smoothing method (eg: median)
+    #  overlap: 0.5 # Overlap ratio for overlapped mean/median smoothing filter
+    #  onset: 0.05 # Onset threshold for detecting the beginning and end of a speech 
+    #  offset: 0.05 # Offset threshold for detecting the end of a speech
+    #  pad_onset: 0.1 # Adding durations before each speech segment 
+    #  pad_offset: -0.05 # Adding durations after each speech segment 
+    #  min_duration_on: 0 # Threshold for small non_speech deletion
+    #  min_duration_off: 0.2 # Threshold for short speech segment deletion
+    #  filter_speech_first: True
 
   speaker_embeddings:
     model_path: titanet_large # .nemo local model path or pretrained model name (titanet_large, ecapa_tdnn or speakerverification_speakernet)
@@ -60,7 +60,7 @@ diarizer:
     parameters:
       use_speaker_model_from_ckpt: True # If True, use speaker embedding model in checkpoint. If False, the provided speaker embedding model in config will be used.
       infer_batch_size: 25 # Batch size for MSDD inference.
-      sigmoid_threshold: [0.7] # Sigmoid threshold for generating binarized speaker labels. The smaller the more generous on detecting overlaps.
+      sigmoid_threshold: [0.6] # Sigmoid threshold for generating binarized speaker labels. The smaller the more generous on detecting overlaps.
       seq_eval_mode: False # If True, use oracle number of speaker and evaluate F1 score for the given speaker sequences. Default is False.
       split_infer: True # If True, break the input audio clip to short sequences and calculate cluster average embeddings for inference.
       diar_window_length: 50 # The length of split short sequence when split_infer is True.
@@ -91,4 +91,5 @@ diarizer:
       min_number_of_words: 3 # Min number of words for the left context.
       max_number_of_words: 10 # Max number of words for the right context.
       logprob_diff_threshold: 1.2  # The threshold for the difference between two log probability values from two hypotheses.
+
 
