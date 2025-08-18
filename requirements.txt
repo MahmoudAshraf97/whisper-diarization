@@ -1,8 +1,6 @@
-wget
-nemo_toolkit[asr]==2.0.0rc0
+nemo_toolkit[asr]>=2.3.0
 nltk
 faster-whisper>=1.1.0
 git+https://github.com/MahmoudAshraf97/demucs.git
 git+https://github.com/oliverguhr/deepmultilingualpunctuation.git
 git+https://github.com/MahmoudAshraf97/ctc-forced-aligner.git
-
