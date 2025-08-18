@@ -5,7 +5,6 @@ import re
 
 import faster_whisper
 import torch
-import torchaudio
 
 from ctc_forced_aligner import (
     generate_emissions,
@@ -16,11 +15,9 @@ from ctc_forced_aligner import (
     preprocess_text,
 )
 from deepmultilingualpunctuation import PunctuationModel
-from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 
 from helpers import (
     cleanup,
-    create_config,
     find_numeral_symbol_tokens,
     get_realigned_ws_mapping_with_punctuation,
     get_sentences_speaker_mapping,
@@ -37,6 +34,9 @@ mtypes = {"cpu": "int8", "cuda": "float16"}
 
 pid = os.getpid()
 temp_outputs_dir = f"temp_outputs_{pid}"
+ROOT = os.getcwd()
+temp_path = os.path.join(ROOT, "temp_outputs")
+os.makedirs(temp_path, exist_ok=True)
 
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -90,6 +90,13 @@ parser.add_argument(
     dest="device",
     default="cuda" if torch.cuda.is_available() else "cpu",
     help="if you have a GPU use 'cuda', otherwise 'cpu'",
+)
+
+parser.add_argument(
+    "--diarizer",
+    default="msdd",
+    choices=["msdd"],
+    help="Choose the diarization model to use",
 )
 
 args = parser.parse_args()
@@ -186,37 +193,14 @@ spans = get_spans(tokens_starred, segments, blank_token)
 
 word_timestamps = postprocess_results(text_starred, spans, stride, scores)
 
+if args.diarizer == "msdd":
+    from diarization import MSDDDiarizer
 
-# convert audio to mono for NeMo combatibility
-ROOT = os.getcwd()
-temp_path = os.path.join(ROOT, temp_outputs_dir)
-os.makedirs(temp_path, exist_ok=True)
-torchaudio.save(
-    os.path.join(temp_path, "mono_file.wav"),
-    torch.from_numpy(audio_waveform).unsqueeze(0).float(),
-    16000,
-    channels_first=True,
-)
+    diarizer_model = MSDDDiarizer(device=args.device)
 
-
-# Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to(args.device)
-msdd_model.diarize()
-
-del msdd_model
+speaker_ts = diarizer_model.diarize(torch.from_numpy(audio_waveform).unsqueeze(0))
+del diarizer_model
 torch.cuda.empty_cache()
-
-# Reading timestamps <> Speaker Labels mapping
-
-
-speaker_ts = []
-with open(os.path.join(temp_path, "pred_rttms", "mono_file.rttm"), "r") as f:
-    lines = f.readlines()
-    for line in lines:
-        line_list = line.split(" ")
-        s = int(float(line_list[5]) * 1000)
-        e = s + int(float(line_list[8]) * 1000)
-        speaker_ts.append([s, e, int(line_list[11].split("_")[-1])])
 
 wsm = get_words_speaker_mapping(word_timestamps, speaker_ts, "start")
 

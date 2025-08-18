@@ -1,11 +1,7 @@
-import json
 import os
 import shutil
 
 import nltk
-import wget
-
-from omegaconf import OmegaConf
 
 punct_model_langs = [
     "en",
@@ -247,60 +243,6 @@ langs_to_iso = {
     "yue": "yue",
     "zh": "chi",
 }
-
-
-def create_config(output_dir):
-    DOMAIN_TYPE = "telephonic"
-    CONFIG_LOCAL_DIRECTORY = "nemo_msdd_configs"
-    CONFIG_FILE_NAME = f"diar_infer_{DOMAIN_TYPE}.yaml"
-    MODEL_CONFIG_PATH = os.path.join(CONFIG_LOCAL_DIRECTORY, CONFIG_FILE_NAME)
-    if not os.path.exists(MODEL_CONFIG_PATH):
-        os.makedirs(CONFIG_LOCAL_DIRECTORY, exist_ok=True)
-        CONFIG_URL = f"https://raw.githubusercontent.com/NVIDIA/NeMo/main/examples/speaker_tasks/diarization/conf/inference/{CONFIG_FILE_NAME}"
-        MODEL_CONFIG_PATH = wget.download(CONFIG_URL, MODEL_CONFIG_PATH)
-
-    config = OmegaConf.load(MODEL_CONFIG_PATH)
-
-    data_dir = os.path.join(output_dir, "data")
-    os.makedirs(data_dir, exist_ok=True)
-
-    meta = {
-        "audio_filepath": os.path.join(output_dir, "mono_file.wav"),
-        "offset": 0,
-        "duration": None,
-        "label": "infer",
-        "text": "-",
-        "rttm_filepath": None,
-        "uem_filepath": None,
-    }
-    with open(os.path.join(data_dir, "input_manifest.json"), "w") as fp:
-        json.dump(meta, fp)
-        fp.write("\n")
-
-    pretrained_vad = "vad_multilingual_marblenet"
-    pretrained_speaker_model = "titanet_large"
-    config.num_workers = 0
-    config.diarizer.manifest_filepath = os.path.join(data_dir, "input_manifest.json")
-    config.diarizer.out_dir = (
-        output_dir  # Directory to store intermediate files and prediction outputs
-    )
-
-    config.diarizer.speaker_embeddings.model_path = pretrained_speaker_model
-    config.diarizer.oracle_vad = (
-        False  # compute VAD provided with model_path to vad config
-    )
-    config.diarizer.clustering.parameters.oracle_num_speakers = False
-
-    # Here, we use our in-house pretrained NeMo VAD model
-    config.diarizer.vad.model_path = pretrained_vad
-    config.diarizer.vad.parameters.onset = 0.8
-    config.diarizer.vad.parameters.offset = 0.6
-    config.diarizer.vad.parameters.pad_offset = -0.05
-    config.diarizer.msdd_model.model_path = (
-        "diar_msdd_telephonic"  # Telephonic speaker diarization model
-    )
-
-    return config
 
 
 def get_word_ts_anchor(s, e, option="start"):
