@@ -1,2 +1,1 @@
-huggingface_hub<0.24
 numpy<2
