@@ -35,12 +35,12 @@ class SortformerDiarizer:
             )
             processed_signal = processed_signal[:, :, : processed_signal_length.max()]
 
-            if self.model.streaming_mode:
-                preds = self.model.forward_streaming(
-                    processed_signal, processed_signal_length
-                )
-                preds = preds.cpu()
+            preds = self.model.forward_streaming(
+                processed_signal, processed_signal_length
+            )
+            preds = preds.cpu()
 
+        # TODO: make this tunable
         diarize_cfg = DiarizeConfig(
             postprocessing_params={
                 "onset": 0.5,
