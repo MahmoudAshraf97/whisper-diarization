@@ -34,8 +34,7 @@ mtypes = {"cpu": "int8", "cuda": "float16"}
 
 pid = os.getpid()
 temp_outputs_dir = f"temp_outputs_{pid}"
-ROOT = os.getcwd()
-temp_path = os.path.join(ROOT, "temp_outputs")
+temp_path = os.path.join(os.getcwd(), "temp_outputs")
 os.makedirs(temp_path, exist_ok=True)
 
 # Initialize parser

@@ -68,11 +68,6 @@ class MSDDDiarizer:
                 start, end = int(start * 1000), int(end * 1000)
                 labels.append((start, end, int(speaker.split("_")[1])))
 
-            # pred_labels_clus = [label.split() for label in pred_labels_clus]
-            # labels = [
-            #     (int(start * 1000), int(end*1000), int(speaker.split("_")[1]))
-            #     for start, end, speaker in pred_labels_clus
-            # ]
             labels = sorted(labels, key=lambda x: x[0])
 
         return labels
