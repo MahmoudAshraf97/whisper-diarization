@@ -89,7 +89,7 @@ parser.add_argument(
 parser.add_argument(
     "--diarizer",
     default="msdd",
-    choices=["msdd"],
+    choices=["msdd", "sortformer"],
     help="Choose the diarization model to use",
 )
 
@@ -188,6 +188,11 @@ if args.diarizer == "msdd":
     from diarization import MSDDDiarizer
 
     diarizer_model = MSDDDiarizer(device=args.device)
+
+elif args.diarizer == "sortformer":
+    from diarization import SortformerDiarizer
+
+    diarizer_model = SortformerDiarizer(device=args.device)
 
 speaker_ts = diarizer_model.diarize(torch.from_numpy(audio_waveform).unsqueeze(0))
 del diarizer_model

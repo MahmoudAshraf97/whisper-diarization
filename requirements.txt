@@ -1,4 +1,4 @@
-nemo_toolkit[asr]>=2.3.0
+nemo_toolkit[asr]>=2.5.0rc0
 nltk
 faster-whisper>=1.1.0
 git+https://github.com/MahmoudAshraf97/demucs.git
