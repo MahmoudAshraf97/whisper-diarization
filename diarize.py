@@ -25,6 +25,7 @@ from helpers import (
     get_realigned_ws_mapping_with_punctuation,
     get_sentences_speaker_mapping,
     get_speaker_aware_transcript,
+    get_timestamped_speaker_aware_transcript,
     get_words_speaker_mapping,
     langs_to_iso,
     process_language_arg,
@@ -90,6 +91,14 @@ parser.add_argument(
     dest="device",
     default="cuda" if torch.cuda.is_available() else "cpu",
     help="if you have a GPU use 'cuda', otherwise 'cpu'",
+)
+
+parser.add_argument(
+    "--text-with-timestamps",
+    type=int,
+    dest="text_with_timestamps",
+    default=0,
+    help="Whether to include word-level timestamps in the output text file (1 for yes, 0 for no)",
 )
 
 args = parser.parse_args()
@@ -256,7 +265,10 @@ wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
 with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
-    get_speaker_aware_transcript(ssm, f)
+    if args.text_with_timestamps:
+        get_timestamped_speaker_aware_transcript(ssm, f)
+    else:
+        get_speaker_aware_transcript(ssm, f)
 
 with open(f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
