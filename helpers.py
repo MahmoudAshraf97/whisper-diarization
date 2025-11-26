@@ -418,6 +418,27 @@ def get_speaker_aware_transcript(sentences_speaker_mapping, f):
         # No matter what, write the current sentence
         f.write(sentence + " ")
 
+def get_timestamped_speaker_aware_transcript(sentences_speaker_mapping, f):
+    if not sentences_speaker_mapping:
+        return
+    
+    previous_speaker = None
+
+    for sentence_dict in sentences_speaker_mapping:
+        speaker = sentence_dict["speaker"]
+        sentence = sentence_dict["text"]
+
+        # If this speaker doesn't match the previous one, start a new paragraph
+        if speaker != previous_speaker:
+            if previous_speaker is not None:
+                f.write("\n\n")
+            start_time = format_timestamp(sentence_dict['start_time'], always_include_hours=True, decimal_marker=',')
+            f.write(f"{start_time}\n{speaker}: ")
+            previous_speaker = speaker
+
+        # Write the current sentence with timestamps
+        f.write(f"{sentence} ")
+
 
 def format_timestamp(
     milliseconds: float, always_include_hours: bool = True, decimal_marker: str = ","
