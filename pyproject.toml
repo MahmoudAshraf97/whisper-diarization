@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "BSD-2-Clause"}
 authors = [
-    {name = ""},
+    {name = "Mahmoud Ashraf"},
 ]
 keywords = ["whisper", "diarization", "speech", "transcription", "speaker-identification", "asr"]
 classifiers = [
