@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whisper-diarization"
+version = "2.0.0"
+description = "Speaker Diarization pipeline based on OpenAI Whisper"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "BSD-2-Clause"}
+authors = [
+    {name = ""},
+]
+keywords = ["whisper", "diarization", "speech", "transcription", "speaker-identification", "asr"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+
+dependencies = [
+    "nltk",
+    "faster-whisper>=1.1.0",
+    "torch",
+    "torchaudio",
+    "numpy",
+    # NeMo toolkit with ASR extras
+    "nemo-toolkit[asr]>=2.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/MahmoudAshraf97/whisper-diarization"
+Repository = "https://github.com/MahmoudAshraf97/whisper-diarization"
+Issues = "https://github.com/MahmoudAshraf97/whisper-diarization/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "flake8",
+    "isort",
+]
+
+# Note: Dependencies that require git+ URLs need to be installed separately:
+# pip install git+https://github.com/MahmoudAshraf97/demucs.git
+# pip install git+https://github.com/oliverguhr/deepmultilingualpunctuation.git
+# pip install git+https://github.com/MahmoudAshraf97/ctc-forced-aligner.git
+
+[tool.setuptools]
+packages = ["whisper_diarization", "whisper_diarization.diarization", "whisper_diarization.diarization.msdd"]
+
+[tool.setuptools.package-dir]
+whisper_diarization = "."
+
+[tool.setuptools.package-data]
+whisper_diarization = ["diarization/msdd/*.yaml"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+lines_between_types = 1
+

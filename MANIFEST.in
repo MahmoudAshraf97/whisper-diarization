@@ -1,0 +1,11 @@
+include README.md
+include LICENSE
+include INSTALL.md
+include requirements.txt
+include CHANGELOG.md
+include ARCHITECTURE.md
+include QUICKSTART.md
+include USAGE.md
+recursive-include diarization *.yaml
+recursive-include diarization *.py
+
