@@ -5,21 +5,21 @@ A comprehensive speech transcription and diarization library built on
 Whisper and NeMo MSDD models.
 
 Example:
-    >>> from processor import SpeechProcessor
+    >>> from whisper_diarization import SpeechProcessor
     >>> processor = SpeechProcessor(device='cuda')
     >>> result = processor.diarize('audio.mp3')
     >>> print(result.to_txt())
 """
 
-from models import (
+from .models import (
     DiarizationResult,
     Segment,
     SpeechTimestamp,
     TranscriptionResult,
     WordTimestamp,
 )
-from preprocessor import AudioPreprocessor
-from processor import SpeechProcessor
+from .preprocessor import AudioPreprocessor
+from .processor import SpeechProcessor
 
 __version__ = "2.0.0"
 __all__ = [

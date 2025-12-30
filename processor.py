@@ -22,8 +22,8 @@ from ctc_forced_aligner import (
 )
 from deepmultilingualpunctuation import PunctuationModel
 
-from diarization import MSDDDiarizer
-from helpers import (
+from .diarization import MSDDDiarizer
+from .helpers import (
     LANGUAGES,
     find_numeral_symbol_tokens,
     get_realigned_ws_mapping_with_punctuation,
@@ -33,14 +33,14 @@ from helpers import (
     process_language_arg,
     punct_model_langs,
 )
-from models import (
+from .models import (
     DiarizationResult,
     Segment,
     SpeechTimestamp,
     TranscriptionResult,
     WordTimestamp,
 )
-from preprocessor import AudioPreprocessor
+from .preprocessor import AudioPreprocessor
 
 
 logger = logging.getLogger(__name__)
