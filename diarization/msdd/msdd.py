@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
-
+from pathlib import Path
 from typing import Union
 
 import torch
@@ -74,9 +74,34 @@ class MSDDDiarizer:
 
 
 def create_config():
-    config = OmegaConf.load(
-        os.path.join(os.path.dirname(__file__), "diar_infer_telephonic.yaml")
-    )
+    # Try to find the YAML config file in multiple locations
+    # This ensures it works both in development and when installed as a package
+    config_file = "diar_infer_telephonic.yaml"
+    
+    # Method 1: Try relative to this file (development mode)
+    config_path = Path(__file__).parent / config_file
+    
+    if not config_path.exists():
+        # Method 2: Try using importlib.resources (installed package)
+        try:
+            import importlib.resources as pkg_resources
+            # For Python 3.9+
+            if hasattr(pkg_resources, 'files'):
+                config_path = pkg_resources.files('whisper_diarization.diarization.msdd') / config_file
+            else:
+                # For Python 3.8
+                import importlib_resources
+                config_path = importlib_resources.files('whisper_diarization.diarization.msdd') / config_file
+        except (ImportError, AttributeError):
+            pass
+    
+    if not config_path.exists():
+        raise FileNotFoundError(
+            f"Could not find {config_file}. "
+            f"Tried: {config_path}"
+        )
+    
+    config = OmegaConf.load(str(config_path))
     pretrained_vad = "vad_multilingual_marblenet"
     pretrained_speaker_model = "titanet_large"
 
