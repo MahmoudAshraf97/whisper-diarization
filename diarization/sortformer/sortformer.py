@@ -35,9 +35,7 @@ class SortformerDiarizer:
             )
             processed_signal = processed_signal[:, :, : processed_signal_length.max()]
 
-            preds = self.model.forward_streaming(
-                processed_signal, processed_signal_length
-            )
+            preds = self.model.forward_streaming(processed_signal, processed_signal_length)
             preds = preds.cpu()
 
         # TODO: make this tunable
@@ -65,9 +63,7 @@ class SortformerDiarizer:
 
         self.model._diarize_audio_rttm_map = audio_rttm_map_dict
         uniq_ids = list(self.model._diarize_audio_rttm_map.keys())
-        processed_outputs = self.model._diarize_output_processing(
-            preds, uniq_ids, diarize_cfg
-        )
+        processed_outputs = self.model._diarize_output_processing(preds, uniq_ids, diarize_cfg)
         self.model._diarize_audio_rttm_map = {}
 
         labels = []

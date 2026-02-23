@@ -48,9 +48,7 @@ class MSDDDiarizer:
                 num_workers=0,
                 verbose=True,
             )
-            self.model.clustering_embedding.clus_diar_model._diarizer_params.out_dir = (
-                temp_path
-            )
+            self.model.clustering_embedding.clus_diar_model._diarizer_params.out_dir = temp_path
             self.model.clustering_embedding.clus_diar_model._diarizer_params.manifest_filepath = (
                 manifest_path
             )
@@ -74,18 +72,14 @@ class MSDDDiarizer:
 
 
 def create_config():
-    config = OmegaConf.load(
-        os.path.join(os.path.dirname(__file__), "diar_infer_telephonic.yaml")
-    )
+    config = OmegaConf.load(os.path.join(os.path.dirname(__file__), "diar_infer_telephonic.yaml"))
     pretrained_vad = "vad_multilingual_marblenet"
     pretrained_speaker_model = "titanet_large"
 
     config.diarizer.out_dir = None
     config.diarizer.manifest_filepath = None
     config.diarizer.speaker_embeddings.model_path = pretrained_speaker_model
-    config.diarizer.oracle_vad = (
-        False  # compute VAD provided with model_path to vad config
-    )
+    config.diarizer.oracle_vad = False  # compute VAD provided with model_path to vad config
     config.diarizer.clustering.parameters.oracle_num_speakers = False
 
     # Here, we use our in-house pretrained NeMo VAD model
