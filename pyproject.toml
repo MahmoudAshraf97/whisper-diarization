@@ -1,13 +1,10 @@
 [tool.ruff]
 line-length = 100
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
 ignore = ["E203", "E731"]
-
-[tool.ruff.lint.per-file-ignores]
-"helpers.py" = ["E731"]
-
 
 [tool.ruff.lint.isort]
 lines-between-types = 1
