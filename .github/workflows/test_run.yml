@@ -9,8 +9,20 @@ on:
     - cron: '0 0 * * TUE'
 
 jobs:
-  build:
+  check-python-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - uses: pre-commit/action@v3.0.1
+
+  test-run:
+    needs: [check-python-style]
     strategy:
       fail-fast: false
       matrix:
@@ -48,6 +60,6 @@ jobs:
         python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
         uv pip install --system -c constraints.txt -r requirements.txt
 
-    - name: Test running a file
+    - name: Test with msdd diarizer
       run: |
-        python diarize.py -a "./tests/assets/test.opus" --whisper-model tiny.en
+        python diarize.py -a "./tests/assets/test.opus" --whisper-model tiny.en --diarizer msdd

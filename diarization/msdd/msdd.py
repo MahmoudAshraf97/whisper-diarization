@@ -1,11 +1,11 @@
 import json
 import os
 import tempfile
+import wave
 
 from typing import Union
 
 import torch
-import torchaudio
 
 from nemo.collections.asr.models.msdd_models import NeuralDiarizer
 from nemo.collections.asr.parts.utils.speaker_utils import rttm_to_labels
@@ -18,12 +18,12 @@ class MSDDDiarizer:
 
     def diarize(self, audio: torch.Tensor):
         with tempfile.TemporaryDirectory() as temp_path:
-            torchaudio.save(
-                os.path.join(temp_path, "mono_file.wav"),
-                audio,
-                16000,
-                channels_first=True,
-            )
+            pcm = (audio.cpu().numpy() * 32768).clip(-32768, 32767).astype("int16")
+            with wave.open(os.path.join(temp_path, "mono_file.wav"), "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(16000)
+                wf.writeframes(pcm.tobytes())
 
             manifest_path = os.path.join(temp_path, "manifest.json")
             meta = {
@@ -48,9 +48,7 @@ class MSDDDiarizer:
                 num_workers=0,
                 verbose=True,
             )
-            self.model.clustering_embedding.clus_diar_model._diarizer_params.out_dir = (
-                temp_path
-            )
+            self.model.clustering_embedding.clus_diar_model._diarizer_params.out_dir = temp_path
             self.model.clustering_embedding.clus_diar_model._diarizer_params.manifest_filepath = (
                 manifest_path
             )
@@ -74,18 +72,14 @@ class MSDDDiarizer:
 
 
 def create_config():
-    config = OmegaConf.load(
-        os.path.join(os.path.dirname(__file__), "diar_infer_telephonic.yaml")
-    )
+    config = OmegaConf.load(os.path.join(os.path.dirname(__file__), "diar_infer_telephonic.yaml"))
     pretrained_vad = "vad_multilingual_marblenet"
     pretrained_speaker_model = "titanet_large"
 
     config.diarizer.out_dir = None
     config.diarizer.manifest_filepath = None
     config.diarizer.speaker_embeddings.model_path = pretrained_speaker_model
-    config.diarizer.oracle_vad = (
-        False  # compute VAD provided with model_path to vad config
-    )
+    config.diarizer.oracle_vad = False  # compute VAD provided with model_path to vad config
     config.diarizer.clustering.parameters.oracle_num_speakers = False
 
     # Here, we use our in-house pretrained NeMo VAD model

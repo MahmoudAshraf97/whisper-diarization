@@ -32,23 +32,18 @@ from helpers import (
 
 mtypes = {"cpu": "int8", "cuda": "float16"}
 
-pid = os.getpid()
-temp_outputs_dir = f"temp_outputs_{pid}"
-temp_path = os.path.join(os.getcwd(), "temp_outputs")
+temp_path = os.path.join(os.getcwd(), f"temp_outputs_{os.getpid()}")
 os.makedirs(temp_path, exist_ok=True)
 
 # Initialize parser
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-a", "--audio", help="name of the target audio file", required=True
-)
+parser.add_argument("-a", "--audio", help="name of the target audio file", required=True)
 parser.add_argument(
     "--no-stem",
     action="store_false",
     dest="stemming",
     default=True,
-    help="Disables source separation."
-    "This helps with long files that don't contain a lot of music.",
+    help="Disables source separation.This helps with long files that don't contain a lot of music.",
 )
 
 parser.add_argument(
@@ -105,7 +100,8 @@ if args.stemming:
     # Isolate vocals from the rest of the audio
 
     return_code = os.system(
-        f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "{temp_outputs_dir}" --device "{args.device}"'
+        f"python -m demucs.separate -n htdemucs --two-stems=vocals "
+        f'"{args.audio}" -o "{temp_path}" --device "{args.device}"'
     )
 
     if return_code != 0:
@@ -116,7 +112,7 @@ if args.stemming:
         vocal_target = args.audio
     else:
         vocal_target = os.path.join(
-            temp_outputs_dir,
+            temp_path,
             "htdemucs",
             os.path.splitext(os.path.basename(args.audio))[0],
             "vocals.wav",
@@ -133,9 +129,7 @@ whisper_model = faster_whisper.WhisperModel(
 whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
 audio_waveform = faster_whisper.decode_audio(vocal_target)
 suppress_tokens = (
-    find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
-    if args.suppress_numerals
-    else [-1]
+    find_numeral_symbol_tokens(whisper_model.hf_tokenizer) if args.suppress_numerals else [-1]
 )
 
 if args.batch_size > 0:
@@ -167,9 +161,7 @@ alignment_model, alignment_tokenizer = load_alignment_model(
 
 emissions, stride = generate_emissions(
     alignment_model,
-    torch.from_numpy(audio_waveform)
-    .to(alignment_model.dtype)
-    .to(alignment_model.device),
+    torch.from_numpy(audio_waveform).to(alignment_model.dtype).to(alignment_model.device),
     batch_size=args.batch_size,
 )
 

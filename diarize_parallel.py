@@ -50,9 +50,7 @@ if __name__ == "__main__":
 
     # Initialize parser
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-a", "--audio", help="name of the target audio file", required=True
-    )
+    parser.add_argument("-a", "--audio", help="name of the target audio file", required=True)
     parser.add_argument(
         "--no-stem",
         action="store_false",
@@ -116,7 +114,8 @@ if __name__ == "__main__":
         # Isolate vocals from the rest of the audio
 
         return_code = os.system(
-            f'python -m demucs.separate -n htdemucs --two-stems=vocals "{args.audio}" -o "{temp_outputs_dir}" --device "{args.device}"'
+            f"python -m demucs.separate -n htdemucs --two-stems=vocals "
+            f'"{args.audio}" -o "{temp_path}" --device "{args.device}"'
         )
 
         if return_code != 0:
@@ -156,9 +155,7 @@ if __name__ == "__main__":
     whisper_pipeline = faster_whisper.BatchedInferencePipeline(whisper_model)
 
     suppress_tokens = (
-        find_numeral_symbol_tokens(whisper_model.hf_tokenizer)
-        if args.suppress_numerals
-        else [-1]
+        find_numeral_symbol_tokens(whisper_model.hf_tokenizer) if args.suppress_numerals else [-1]
     )
 
     if args.batch_size > 0:
@@ -190,9 +187,7 @@ if __name__ == "__main__":
 
     emissions, stride = generate_emissions(
         alignment_model,
-        torch.from_numpy(audio_waveform)
-        .to(alignment_model.dtype)
-        .to(alignment_model.device),
+        torch.from_numpy(audio_waveform).to(alignment_model.dtype).to(alignment_model.device),
         batch_size=args.batch_size,
     )
 
@@ -261,9 +256,7 @@ if __name__ == "__main__":
     with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
         get_speaker_aware_transcript(ssm, f)
 
-    with open(
-        f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig"
-    ) as srt:
+    with open(f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig") as srt:
         write_srt(ssm, srt)
 
     cleanup(temp_path)

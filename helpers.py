@@ -137,9 +137,7 @@ TO_LANGUAGE_CODE = {
     "castilian": "es",
 }
 
-whisper_langs = sorted(LANGUAGES.keys()) + sorted(
-    [k.title() for k in TO_LANGUAGE_CODE.keys()]
-)
+whisper_langs = sorted(LANGUAGES.keys()) + sorted([k.title() for k in TO_LANGUAGE_CODE.keys()])
 
 langs_to_iso = {
     "af": "afr",
@@ -270,9 +268,7 @@ def get_words_speaker_mapping(wrd_ts, spk_ts, word_anchor_option="start"):
             s, e, sp = spk_ts[turn_idx]
             if turn_idx == len(spk_ts) - 1:
                 e = get_word_ts_anchor(ws, we, option="end")
-        wrd_spk_mapping.append(
-            {"word": wrd, "start_time": ws, "end_time": we, "speaker": sp}
-        )
+        wrd_spk_mapping.append({"word": wrd, "start_time": ws, "end_time": we, "speaker": sp})
     return wrd_spk_mapping
 
 
@@ -280,9 +276,7 @@ sentence_ending_punctuations = ".?!"
 
 
 def get_first_word_idx_of_sentence(word_idx, word_list, speaker_list, max_words):
-    is_word_sentence_end = (
-        lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
-    )
+    is_word_sentence_end = lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
     left_idx = word_idx
     while (
         left_idx > 0
@@ -296,9 +290,7 @@ def get_first_word_idx_of_sentence(word_idx, word_list, speaker_list, max_words)
 
 
 def get_last_word_idx_of_sentence(word_idx, word_list, max_words):
-    is_word_sentence_end = (
-        lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
-    )
+    is_word_sentence_end = lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
     right_idx = word_idx
     while (
         right_idx < len(word_list) - 1
@@ -307,19 +299,12 @@ def get_last_word_idx_of_sentence(word_idx, word_list, max_words):
     ):
         right_idx += 1
 
-    return (
-        right_idx
-        if right_idx == len(word_list) - 1 or is_word_sentence_end(right_idx)
-        else -1
-    )
+    return right_idx if right_idx == len(word_list) - 1 or is_word_sentence_end(right_idx) else -1
 
 
-def get_realigned_ws_mapping_with_punctuation(
-    word_speaker_mapping, max_words_in_sentence=50
-):
+def get_realigned_ws_mapping_with_punctuation(word_speaker_mapping, max_words_in_sentence=50):
     is_word_sentence_end = (
-        lambda x: x >= 0
-        and word_speaker_mapping[x]["word"][-1] in sentence_ending_punctuations
+        lambda x: x >= 0 and word_speaker_mapping[x]["word"][-1] in sentence_ending_punctuations
     )
     wsp_len = len(word_speaker_mapping)
 
@@ -357,9 +342,7 @@ def get_realigned_ws_mapping_with_punctuation(
                 k += 1
                 continue
 
-            speaker_list[left_idx : right_idx + 1] = [mod_speaker] * (
-                right_idx - left_idx + 1
-            )
+            speaker_list[left_idx : right_idx + 1] = [mod_speaker] * (right_idx - left_idx + 1)
             k = right_idx
 
         k += 1
@@ -434,9 +417,7 @@ def format_timestamp(
     milliseconds -= seconds * 1_000
 
     hours_marker = f"{hours:02d}:" if always_include_hours or hours > 0 else ""
-    return (
-        f"{hours_marker}{minutes:02d}:{seconds:02d}{decimal_marker}{milliseconds:03d}"
-    )
+    return f"{hours_marker}{minutes:02d}:{seconds:02d}{decimal_marker}{milliseconds:03d}"
 
 
 def write_srt(transcript, file):
@@ -490,17 +471,11 @@ def _get_next_start_timestamp(word_timestamps, current_word_index, final_timesta
             return word_timestamps[next_word_index]["start"]
 
 
-def filter_missing_timestamps(
-    word_timestamps, initial_timestamp=0, final_timestamp=None
-):
+def filter_missing_timestamps(word_timestamps, initial_timestamp=0, final_timestamp=None):
     # handle the first and last word
     if word_timestamps[0].get("start") is None:
-        word_timestamps[0]["start"] = (
-            initial_timestamp if initial_timestamp is not None else 0
-        )
-        word_timestamps[0]["end"] = _get_next_start_timestamp(
-            word_timestamps, 0, final_timestamp
-        )
+        word_timestamps[0]["start"] = initial_timestamp if initial_timestamp is not None else 0
+        word_timestamps[0]["end"] = _get_next_start_timestamp(word_timestamps, 0, final_timestamp)
 
     result = [
         word_timestamps[0],
