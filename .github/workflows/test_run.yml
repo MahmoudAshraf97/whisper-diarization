@@ -60,6 +60,10 @@ jobs:
         python -m pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
         uv pip install --system -c constraints.txt -r requirements.txt
 
+    - name: Test with sortformer diarizer
+      run: |
+        python diarize.py -a "./tests/assets/test.opus" --whisper-model tiny.en --diarizer sortformer
+
     - name: Test with msdd diarizer
       run: |
         python diarize.py -a "./tests/assets/test.opus" --whisper-model tiny.en --diarizer msdd
