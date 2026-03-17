@@ -5,3 +5,4 @@ __pycache__/
 *.mp3
 *.m4a
 
+venv
