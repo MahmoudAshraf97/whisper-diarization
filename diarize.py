@@ -80,6 +80,55 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--beam-size",
+    type=int,
+    default=5,
+    help="Beam size for Whisper decoding.",
+)
+
+parser.add_argument(
+    "--best-of",
+    type=int,
+    default=5,
+    help="Number of candidates considered during Whisper decoding.",
+)
+
+parser.add_argument(
+    "--patience",
+    type=float,
+    default=2.0,
+    help="Beam search patience for Whisper decoding.",
+)
+
+parser.add_argument(
+    "--compression-ratio-threshold",
+    type=float,
+    default=2.4,
+    help="Threshold used to reject repetitive Whisper outputs.",
+)
+
+parser.add_argument(
+    "--log-prob-threshold",
+    type=float,
+    default=-1.0,
+    help="Threshold used to reject low-confidence Whisper outputs.",
+)
+
+parser.add_argument(
+    "--condition-on-previous-text",
+    action=argparse.BooleanOptionalAction,
+    default=False,
+    help="Condition Whisper decoding on the previous segment text.",
+)
+
+parser.add_argument(
+    "--temperature",
+    type=float,
+    default=0.0,
+    help="Sampling temperature for Whisper decoding.",
+)
+
+parser.add_argument(
     "--device",
     dest="device",
     default="cuda" if torch.cuda.is_available() else "cpu",
@@ -131,20 +180,29 @@ audio_waveform = faster_whisper.decode_audio(vocal_target)
 suppress_tokens = (
     find_numeral_symbol_tokens(whisper_model.hf_tokenizer) if args.suppress_numerals else [-1]
 )
+transcribe_kwargs = {
+    "language": language,
+    "suppress_tokens": suppress_tokens,
+    "beam_size": args.beam_size,
+    "best_of": args.best_of,
+    "patience": args.patience,
+    "compression_ratio_threshold": args.compression_ratio_threshold,
+    "log_prob_threshold": args.log_prob_threshold,
+    "condition_on_previous_text": args.condition_on_previous_text,
+    "temperature": args.temperature,
+}
 
 if args.batch_size > 0:
     transcript_segments, info = whisper_pipeline.transcribe(
         audio_waveform,
-        language,
-        suppress_tokens=suppress_tokens,
         batch_size=args.batch_size,
+        **transcribe_kwargs,
     )
 else:
     transcript_segments, info = whisper_model.transcribe(
         audio_waveform,
-        language,
-        suppress_tokens=suppress_tokens,
         vad_filter=True,
+        **transcribe_kwargs,
     )
 
 full_transcript = "".join(segment.text for segment in transcript_segments)
