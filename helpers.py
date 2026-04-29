@@ -278,63 +278,15 @@ def get_words_speaker_mapping(wrd_ts, spk_ts, word_anchor_option="start"):
 
 sentence_ending_punctuations = ".?!"
 
-# --------------------------------------------------------------------
-# Old code kept for reference.
-# Change: add bounds checks so punctuation-based realignment does not
-# raise IndexError on empty/short word lists or malformed indices.
-# --------------------------------------------------------------------
-# def get_first_word_idx_of_sentence(word_idx, word_list, speaker_list, max_words):
-#     is_word_sentence_end = (
-#         lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
-#     )
-#     left_idx = word_idx
-#     while (
-#         left_idx > 0
-#         and word_idx - left_idx < max_words
-#         and speaker_list[left_idx - 1] == speaker_list[left_idx]
-#         and not is_word_sentence_end(left_idx - 1)
-#     ):
-#         left_idx -= 1
-#
-#     return left_idx if left_idx == 0 or is_word_sentence_end(left_idx - 1) else -1
-#
-# def get_last_word_idx_of_sentence(word_idx, word_list, max_words):
-#     is_word_sentence_end = (
-#         lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
-#     )
-#     right_idx = word_idx
-#     while (
-#         right_idx < len(word_list) - 1
-#         and right_idx - word_idx < max_words
-#         and not is_word_sentence_end(right_idx)
-#     ):
-#         right_idx += 1
-#
-#     return (
-#         right_idx
-#         if right_idx == len(word_list) - 1 or is_word_sentence_end(right_idx)
-#         else -1
-#     )
 
 def get_first_word_idx_of_sentence(word_idx, word_list, speaker_list, max_words):
-    def is_word_sentence_end(x):
-        return (
-            0 <= x < len(word_list)
-            and isinstance(word_list[x], str)
-            and word_list[x]
-            and word_list[x][-1] in sentence_ending_punctuations
-        )
-
-    if not word_list or not speaker_list:
-        return -1
-    if not (0 <= word_idx < len(word_list)) or word_idx >= len(speaker_list):
-        return -1
-    
+    is_word_sentence_end = (
+        lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
+    )
     left_idx = word_idx
     while (
         left_idx > 0
         and word_idx - left_idx < max_words
-        and left_idx - 1 < len(speaker_list)
         and speaker_list[left_idx - 1] == speaker_list[left_idx]
         and not is_word_sentence_end(left_idx - 1)
     ):
@@ -344,17 +296,9 @@ def get_first_word_idx_of_sentence(word_idx, word_list, speaker_list, max_words)
 
 
 def get_last_word_idx_of_sentence(word_idx, word_list, max_words):
-    def is_word_sentence_end(x):
-        return (
-            0 <= x < len(word_list)
-            and isinstance(word_list[x], str)
-            and word_list[x]
-            and word_list[x][-1] in sentence_ending_punctuations
-        )
-
-    if not word_list or not (0 <= word_idx < len(word_list)):
-        return -1
-
+    is_word_sentence_end = (
+        lambda x: x >= 0 and word_list[x][-1] in sentence_ending_punctuations
+    )
     right_idx = word_idx
     while (
         right_idx < len(word_list) - 1
@@ -363,7 +307,11 @@ def get_last_word_idx_of_sentence(word_idx, word_list, max_words):
     ):
         right_idx += 1
 
-    return right_idx if right_idx == len(word_list) - 1 or is_word_sentence_end(right_idx) else -1
+    return (
+        right_idx
+        if right_idx == len(word_list) - 1 or is_word_sentence_end(right_idx)
+        else -1
+    )
 
 
 def get_realigned_ws_mapping_with_punctuation(
