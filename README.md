@@ -48,14 +48,14 @@ Whisper and NeMo parameters are coded into diarize.py and helpers.py, I will add
 Python >= `3.10` is needed, `3.9` will work but you'll need to manually install the requirements one by one.
 
 `FFMPEG` and `Cython` are needed as prerequisites to install the requirements
-```
+```shell
 pip install cython
 ```
 or
-```
+```shell
 sudo apt update && sudo apt install cython3
 ```
-```
+```shell
 # on Ubuntu or Debian
 sudo apt update && sudo apt install ffmpeg
 
@@ -74,12 +74,12 @@ scoop install ffmpeg
 # on Windows using WinGet (https://github.com/microsoft/winget-cli)
 winget install ffmpeg
 ```
-```
+```shell
 pip install -c constraints.txt -r requirements.txt
 ```
 ## Usage 
 
-```
+```shell
 python diarize.py -a AUDIO_FILE_NAME
 ```
 
