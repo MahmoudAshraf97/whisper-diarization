@@ -93,6 +93,13 @@ parser.add_argument(
     help="Choose the diarization model to use",
 )
 
+parser.add_argument(
+    "--with-txt-timestamps",
+    action="store_true",
+    dest="txt_timestamps",
+    help="Include timestamps in the txt file output. This argument is optional, and by default timestamps are not included in the txt output.",
+)   
+
 args = parser.parse_args()
 language = process_language_arg(args.language, args.model_name)
 
@@ -236,7 +243,7 @@ wsm = get_realigned_ws_mapping_with_punctuation(wsm)
 ssm = get_sentences_speaker_mapping(wsm, speaker_ts)
 
 with open(f"{os.path.splitext(args.audio)[0]}.txt", "w", encoding="utf-8-sig") as f:
-    get_speaker_aware_transcript(ssm, f)
+    get_speaker_aware_transcript(ssm, f, args.txt_timestamps)
 
 with open(f"{os.path.splitext(args.audio)[0]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
